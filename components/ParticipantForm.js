@@ -12,7 +12,7 @@ export default function ParticipantForm({ onAddParticipant }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!participant.name || !participant.phone || !participant.email) {
+        if (!participant.name || !participant.phone) {
             toast.error('Por favor completa todos los campos');
             return;
         }

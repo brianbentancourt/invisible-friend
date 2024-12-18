@@ -3,7 +3,7 @@ import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from 
 
 export default function ParticipantList({ participants }) {
     return (
-        <Table aria-label="Lista de participantes">
+        <Table isStriped aria-label="Lista de participantes">
             <TableHeader>
                 <TableColumn>NOMBRE</TableColumn>
                 <TableColumn>TELÉFONO</TableColumn>
@@ -12,9 +12,9 @@ export default function ParticipantList({ participants }) {
             <TableBody>
                 {participants.map((participant, index) => (
                     <TableRow key={index}>
-                        <TableCell>{participant.name}</TableCell>
-                        <TableCell>{participant.phone}</TableCell>
-                        <TableCell>{participant.email}</TableCell>
+                        <TableCell className="text-black">{participant.name}</TableCell>
+                        <TableCell className="text-black">{participant.phone}</TableCell>
+                        <TableCell className="text-black">{participant.email}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

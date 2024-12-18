@@ -2,17 +2,35 @@
 import { Button } from "@nextui-org/react";
 import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { initializeFirebase } from '@/lib/firebase-client';
+import { initializeFirebase, getIdToken } from '@/lib/firebase-client';
 
 export default function SignIn() {
     const router = useRouter();
     const { auth } = initializeFirebase();
 
+    const createSession = async (token) => {
+        try {
+            await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token }),
+            });
+        } catch (error) {
+            console.error('Error creating session:', error);
+        }
+    };
+
     const signInWithGoogle = async () => {
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
-            router.push('/dashboard');
+            const token = await getIdToken();
+            if (token) {
+                await createSession(token);
+                router.push('/dashboard');
+            }
         } catch (error) {
             console.error('Error al iniciar sesión con Google:', error);
         }
@@ -22,7 +40,11 @@ export default function SignIn() {
         try {
             const provider = new FacebookAuthProvider();
             await signInWithPopup(auth, provider);
-            router.push('/dashboard');
+            const token = await getIdToken();
+            if (token) {
+                await createSession(token);
+                router.push('/dashboard');
+            }
         } catch (error) {
             console.error('Error al iniciar sesión con Facebook:', error);
         }

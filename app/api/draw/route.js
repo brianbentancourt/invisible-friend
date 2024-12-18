@@ -11,6 +11,18 @@ const twilioClient = twilio(
     process.env.TWILIO_AUTH_TOKEN
 );
 
+function shuffleWithValidation(participants) {
+    let shuffled;
+    let isValid = false;
+
+    while (!isValid) {
+        shuffled = shuffle(participants);
+        isValid = !participants.some((participant, index) => participant === shuffled[index]);
+    }
+
+    return shuffled;
+}
+
 function shuffle(array) {
     const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
@@ -77,7 +89,7 @@ export async function POST(request) {
         }
 
         // Realizar el sorteo
-        const shuffled = shuffle(participants);
+        const shuffled = shuffleWithValidation(participants);
         const assignments = [];
 
         for (let i = 0; i < participants.length; i++) {
