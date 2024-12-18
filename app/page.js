@@ -1,12 +1,22 @@
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+'use client';
 
-export default async function Home() {
-  const session = await getSession();
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 
-  if (!session) {
-    redirect('/auth/signin');
-  } else {
-    redirect('/dashboard');
-  }
+export default function Home() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        router.push('/dashboard');
+      } else {
+        router.push('/auth/signin');
+      }
+    }
+  }, [user, loading, router]);
+
+  return <div>Loading...</div>;
 }

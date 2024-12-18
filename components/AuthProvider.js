@@ -1,4 +1,5 @@
 'use client';
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '@/config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -13,11 +14,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                setUser(null);
-            }
+            setUser(user);
             setLoading(false);
         });
 
@@ -25,8 +22,8 @@ export function AuthProvider({ children }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user }}>
-            {!loading && children}
+        <AuthContext.Provider value={{ user, loading }}>
+            {children}
         </AuthContext.Provider>
     );
 }
