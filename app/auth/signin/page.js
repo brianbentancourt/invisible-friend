@@ -1,11 +1,12 @@
 'use client';
 import { Button } from "@nextui-org/react";
 import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
-import { auth } from '@/config/firebase';
 import { useRouter } from 'next/navigation';
+import { initializeFirebase } from '@/lib/firebase-client';
 
 export default function SignIn() {
     const router = useRouter();
+    const { auth } = initializeFirebase();
 
     const signInWithGoogle = async () => {
         try {
@@ -29,27 +30,27 @@ export default function SignIn() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
-            <div className="max-w-md w-full space-y-8">
-                <h2 className="mt-6 text-center text-3xl font-extrabold">
+            <div className="max-w-md w-full space-y-8 p-6">
+                <h2 className="text-3xl font-extrabold text-center">
                     Iniciar sesión
                 </h2>
-                <div className="mt-8 space-y-4">
+                <div className="space-y-4">
                     <Button
                         color="primary"
                         variant="flat"
-                        onClick={signInWithGoogle}
-                        fullWidth
+                        onPress={signInWithGoogle}
+                        className="w-full"
                     >
                         Iniciar sesión con Google
                     </Button>
-                    {/* <Button
+                    <Button
                         color="primary"
                         variant="flat"
-                        onClick={signInWithFacebook}
-                        fullWidth
+                        onPress={signInWithFacebook}
+                        className="w-full"
                     >
                         Iniciar sesión con Facebook
-                    </Button> */}
+                    </Button>
                 </div>
             </div>
         </div>

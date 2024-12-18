@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { NextUIProvider } from '@nextui-org/react'
-import { AuthProvider } from '@/components/AuthProvider'
+import { NextUIProvider } from '@nextui-org/react';
+import { AuthProvider } from '@/components/AuthProvider';
 
 export function Providers({ children }) {
     return (
@@ -10,5 +10,5 @@ export function Providers({ children }) {
                 {children}
             </AuthProvider>
         </NextUIProvider>
-    )
+    );
 }
