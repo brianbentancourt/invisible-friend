@@ -4,11 +4,11 @@ import { Button } from "@nextui-org/react";
 import ParticipantForm from '@/components/ParticipantForm';
 import ParticipantList from '@/components/ParticipantList';
 import { useAuth } from '@/components/AuthProvider';
-import { performDraw } from '@/lib/secretSanta';
 import { toast } from 'react-toastify';
 
 export default function Dashboard() {
     const [participants, setParticipants] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const { user } = useAuth();
 
     const handleAddParticipant = (participant) => {
@@ -21,11 +21,30 @@ export default function Dashboard() {
             return;
         }
 
+        setIsLoading(true);
         try {
-            await performDraw(participants);
-            toast.success('¡Sorteo realizado con éxito!');
+            const response = await fetch('/api/draw', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ participants }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al realizar el sorteo');
+            }
+
+            toast.success('¡Sorteo realizado con éxito! Las notificaciones han sido enviadas.');
+            // Opcional: limpiar la lista después del sorteo exitoso
+            setParticipants([]);
+
         } catch (error) {
-            toast.error('Error al realizar el sorteo');
+            toast.error(error.message || 'Error al realizar el sorteo');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -50,9 +69,10 @@ export default function Dashboard() {
                         <Button
                             color="success"
                             onClick={handleDraw}
+                            isLoading={isLoading}
                             className="mt-4"
                         >
-                            Realizar Sorteo
+                            {isLoading ? 'Realizando sorteo...' : 'Realizar Sorteo'}
                         </Button>
                     )}
                 </div>
