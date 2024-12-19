@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Configurar SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -11,25 +13,78 @@ const twilioClient = twilio(
     process.env.TWILIO_AUTH_TOKEN
 );
 
-function shuffleWithValidation(participants) {
-    let shuffled;
-    let isValid = false;
+async function logAssignments(assignments) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const logFileName = `sorteo-${timestamp}.log`;
+    const logPath = path.join(process.cwd(), 'logs', logFileName);
 
-    while (!isValid) {
-        shuffled = shuffle(participants);
-        isValid = !participants.some((participant, index) => participant === shuffled[index]);
-    }
+    // Crear el directorio logs si no existe
+    await fs.mkdir(path.join(process.cwd(), 'logs'), { recursive: true });
 
-    return shuffled;
+    // Generar el contenido del log
+    const logContent = assignments.map(({ giver, receiver }) =>
+        `${giver.name} (${giver.email}) -> ${receiver.name} (${receiver.email})`
+    ).join('\n');
+
+    const fullLog = `Sorteo Amigo Invisible - ${new Date().toLocaleString()}\n` +
+        '================================================\n' +
+        logContent + '\n\n' +
+        `Total participantes: ${assignments.length}\n` +
+        '================================================\n';
+
+    // Escribir el archivo
+    await fs.writeFile(logPath, fullLog, 'utf8');
+    return logPath;
 }
 
-function shuffle(array) {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+function generateValidAssignments(participants) {
+    const n = participants.length;
+    if (n < 2) return null;
+
+    let attempts = 0;
+    const maxAttempts = 100; // Evitar bucle infinito
+
+    while (attempts < maxAttempts) {
+        attempts++;
+
+        let availableReceivers = Array.from({ length: n }, (_, i) => i);
+        let assignments = new Array(n).fill(-1);
+        let success = true;
+
+        for (let giver = 0; giver < n; giver++) {
+            let validReceivers = availableReceivers.filter(r => r !== giver);
+
+            if (validReceivers.length === 0) {
+                success = false;
+                break;
+            }
+
+            const randomIndex = Math.floor(Math.random() * validReceivers.length);
+            const receiver = validReceivers[randomIndex];
+
+            assignments[giver] = receiver;
+            availableReceivers = availableReceivers.filter(r => r !== receiver);
+        }
+
+        if (success) {
+            let current = 0;
+            let visited = new Set();
+
+            while (!visited.has(current)) {
+                visited.add(current);
+                current = assignments[current];
+            }
+
+            if (visited.size === n) {
+                return assignments.map((receiverIndex, giverIndex) => ({
+                    giver: participants[giverIndex],
+                    receiver: participants[receiverIndex]
+                }));
+            }
+        }
     }
-    return newArray;
+
+    throw new Error('No se pudo generar una asignación válida después de varios intentos');
 }
 
 async function sendEmail(to, subject, text) {
@@ -89,15 +144,17 @@ export async function POST(request) {
         }
 
         // Realizar el sorteo
-        const shuffled = shuffleWithValidation(participants);
-        const assignments = [];
+        const assignments = generateValidAssignments(participants);
 
-        for (let i = 0; i < participants.length; i++) {
-            assignments.push({
-                giver: participants[i],
-                receiver: shuffled[i === participants.length - 1 ? 0 : i + 1]
-            });
+        if (!assignments) {
+            return NextResponse.json(
+                { error: 'No se pudo generar una asignación válida' },
+                { status: 500 }
+            );
         }
+
+        // Guardar el log
+        const logPath = await logAssignments(assignments);
 
         // Enviar notificaciones
         const notificationPromises = assignments.map(async ({ giver, receiver }) => {
@@ -114,7 +171,8 @@ export async function POST(request) {
 
         return NextResponse.json({
             success: true,
-            message: 'Sorteo realizado y notificaciones enviadas con éxito'
+            message: 'Sorteo realizado y notificaciones enviadas con éxito',
+            logFile: logPath
         });
 
     } catch (error) {
