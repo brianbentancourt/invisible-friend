@@ -12,9 +12,9 @@ export default function ParticipantList({ participants }) {
             <TableBody>
                 {participants.map((participant, index) => (
                     <TableRow key={index}>
-                        <TableCell className="text-black">{participant.name}</TableCell>
-                        <TableCell className="text-black">{participant.phone}</TableCell>
-                        <TableCell className="text-black">{participant.email}</TableCell>
+                        <TableCell>{participant.name}</TableCell>
+                        <TableCell>{participant.phone}</TableCell>
+                        <TableCell>{participant.email}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>
