@@ -87,6 +87,24 @@ function generateValidAssignments(participants) {
     throw new Error('No se pudo generar una asignación válida después de varios intentos');
 }
 
+function formatPhoneNumber(phone) {
+    if (!phone) return '';
+    // Eliminar espacios, guiones, paréntesis y otros caracteres no numéricos
+    let cleaned = phone.replace(/[^\d+]/g, '');
+
+    // Si el número empieza con '09' y no tiene prefijo de país, asumir Uruguay (+598)
+    // Esto es un caso específico para números de celular en Uruguay
+    if (cleaned.startsWith('09') && !cleaned.startsWith('+')) {
+        cleaned = '+598' + cleaned.substring(1); // Reemplazar '0' inicial con '+598'
+    }
+
+    // Si aún no empieza con '+' y tiene una longitud esperada para un número sin prefijo de país (ej: 8 dígitos para un fijo, o 9 para celular sin 0 inicial en Uruguay si ya se removió)
+    // Esto es más genérico, se podría refinar con validaciones más estrictas de longitud.
+    // Por ahora, si no tiene '+' y se detectó '09', ya se manejó. Si no, se devuelve como está.
+
+    return cleaned;
+}
+
 async function sendEmail(to, subject, text) {
     const msg = {
         to,
@@ -105,11 +123,16 @@ async function sendEmail(to, subject, text) {
 }
 
 async function sendWhatsApp(to, message) {
+    const formattedPhone = formatPhoneNumber(to);
+    // Asegurar que el número de origen tenga el formato correcto para WhatsApp
+    // Si la variable de entorno ya incluye "whatsapp:", lo quitamos para no duplicarlo
+    const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER.replace('whatsapp:', '');
+    
     try {
         await twilioClient.messages.create({
             body: message,
-            from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-            to: `whatsapp:${to}`
+            from: `whatsapp:${fromNumber}`,
+            to: `whatsapp:${formattedPhone}`
         });
         return true;
     } catch (error) {
@@ -119,11 +142,12 @@ async function sendWhatsApp(to, message) {
 }
 
 async function sendSMS(to, message) {
+    const formattedPhone = formatPhoneNumber(to);
     try {
         await twilioClient.messages.create({
             body: message,
             from: process.env.TWILIO_PHONE_NUMBER,
-            to
+            to: formattedPhone
         });
         return true;
     } catch (error) {
