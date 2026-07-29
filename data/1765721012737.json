@@ -1,0 +1,196 @@
+{
+  "id": "1765721012737",
+  "timestamp": "2025-12-14T14:03:32.737Z",
+  "results": [
+    {
+      "giver": {
+        "name": "Abuelita",
+        "phone": "+598 91 456 703",
+        "email": "",
+        "id": "1765720669020"
+      },
+      "receiver": {
+        "name": "Juan",
+        "phone": "+598 99 729 984",
+        "email": "",
+        "id": "1765720715711"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Haidy",
+        "phone": "+598 99 380 601",
+        "email": "",
+        "id": "1765720681811"
+      },
+      "receiver": {
+        "name": "Bruno",
+        "phone": "+598 91 860 850",
+        "email": "",
+        "id": "1765720747550"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Pia",
+        "phone": "+598 92 866 759",
+        "email": "",
+        "id": "1765720694594"
+      },
+      "receiver": {
+        "name": "Sandra",
+        "phone": "+598 99 887 795",
+        "email": "",
+        "id": "1765720766668"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Juan",
+        "phone": "+598 99 729 984",
+        "email": "",
+        "id": "1765720715711"
+      },
+      "receiver": {
+        "name": "Haidy",
+        "phone": "+598 99 380 601",
+        "email": "",
+        "id": "1765720681811"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Brian",
+        "phone": "097313415",
+        "email": "",
+        "id": "1765720723496"
+      },
+      "receiver": {
+        "name": "Pia",
+        "phone": "+598 92 866 759",
+        "email": "",
+        "id": "1765720694594"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Bruno",
+        "phone": "+598 91 860 850",
+        "email": "",
+        "id": "1765720747550"
+      },
+      "receiver": {
+        "name": "Hugo",
+        "phone": "+598 99 729 889",
+        "email": "",
+        "id": "1765720792766"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Sandra",
+        "phone": "+598 99 887 795",
+        "email": "",
+        "id": "1765720766668"
+      },
+      "receiver": {
+        "name": "Abuelita",
+        "phone": "+598 91 456 703",
+        "email": "",
+        "id": "1765720669020"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Hugo",
+        "phone": "+598 99 729 889",
+        "email": "",
+        "id": "1765720792766"
+      },
+      "receiver": {
+        "name": "Gustavo",
+        "phone": "+598 99 727 333",
+        "email": "",
+        "id": "1765720831815"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Gustavo",
+        "phone": "+598 99 727 333",
+        "email": "",
+        "id": "1765720831815"
+      },
+      "receiver": {
+        "name": "Naty",
+        "phone": "+598 99 355 188",
+        "email": "",
+        "id": "1765721001688"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    },
+    {
+      "giver": {
+        "name": "Naty",
+        "phone": "+598 99 355 188",
+        "email": "",
+        "id": "1765721001688"
+      },
+      "receiver": {
+        "name": "Brian",
+        "phone": "097313415",
+        "email": "",
+        "id": "1765720723496"
+      },
+      "status": {
+        "email": false,
+        "whatsapp": true,
+        "sms": true
+      }
+    }
+  ]
+}

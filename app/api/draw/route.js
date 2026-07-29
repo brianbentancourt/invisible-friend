@@ -1,40 +1,30 @@
 import { NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
-import fs from 'fs/promises';
-import path from 'path';
+import { adminDb } from '@/config/firebase-admin';
 
 // Configurar SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Configurar Twilio
-const twilioClient = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-);
+const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+const twilioToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioClient = (twilioSid && twilioToken) ? twilio(twilioSid, twilioToken) : null;
 
-async function logAssignments(assignments) {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const logFileName = `sorteo-${timestamp}.log`;
-    const logPath = path.join(process.cwd(), 'logs', logFileName);
+if (!twilioSid || !twilioToken) {
+    console.warn('Twilio credentials are not set. SMS and WhatsApp notifications will not work.');
+}
 
-    // Crear el directorio logs si no existe
-    await fs.mkdir(path.join(process.cwd(), 'logs'), { recursive: true });
-
-    // Generar el contenido del log
+function generateLogContent(assignments) {
     const logContent = assignments.map(({ giver, receiver }) =>
         `${giver.name} (${giver.email}) -> ${receiver.name} (${receiver.email})`
     ).join('\n');
 
-    const fullLog = `Sorteo Amigo Invisible - ${new Date().toLocaleString()}\n` +
+    return `Sorteo Amigo Invisible - ${new Date().toLocaleString()}\n` +
         '================================================\n' +
         logContent + '\n\n' +
         `Total participantes: ${assignments.length}\n` +
         '================================================\n';
-
-    // Escribir el archivo
-    await fs.writeFile(logPath, fullLog, 'utf8');
-    return logPath;
 }
 
 function generateValidAssignments(participants) {
@@ -52,7 +42,15 @@ function generateValidAssignments(participants) {
         let success = true;
 
         for (let giver = 0; giver < n; giver++) {
-            let validReceivers = availableReceivers.filter(r => r !== giver);
+            const giverParticipant = participants[giver];
+            const giverExclusions = giverParticipant.exclusions || [];
+
+            let validReceivers = availableReceivers.filter(r => {
+                const receiverParticipant = participants[r];
+                const isSelf = r === giver;
+                const isExcluded = giverExclusions.includes(receiverParticipant.id);
+                return !isSelf && !isExcluded;
+            });
 
             if (validReceivers.length === 0) {
                 success = false;
@@ -67,20 +65,13 @@ function generateValidAssignments(participants) {
         }
 
         if (success) {
-            let current = 0;
-            let visited = new Set();
-
-            while (!visited.has(current)) {
-                visited.add(current);
-                current = assignments[current];
-            }
-
-            if (visited.size === n) {
-                return assignments.map((receiverIndex, giverIndex) => ({
-                    giver: participants[giverIndex],
-                    receiver: participants[receiverIndex]
-                }));
-            }
+            // Ya no forzamos un ciclo único (visited.size === n) 
+            // ya que con muchas exclusiones puede ser imposible.
+            // Siempre y cuando success sea true, significa que todos regalan y todos reciben.
+            return assignments.map((receiverIndex, giverIndex) => ({
+                giver: participants[giverIndex],
+                receiver: participants[receiverIndex]
+            }));
         }
     }
 
@@ -89,18 +80,22 @@ function generateValidAssignments(participants) {
 
 function formatPhoneNumber(phone) {
     if (!phone) return '';
-    // Eliminar espacios, guiones, paréntesis y otros caracteres no numéricos
     let cleaned = phone.replace(/[^\d+]/g, '');
 
-    // Si el número empieza con '09' y no tiene prefijo de país, asumir Uruguay (+598)
-    // Esto es un caso específico para números de celular en Uruguay
-    if (cleaned.startsWith('09') && !cleaned.startsWith('+')) {
-        cleaned = '+598' + cleaned.substring(1); // Reemplazar '0' inicial con '+598'
+    // Si empieza con 598 sin +, agregar +
+    if (cleaned.startsWith('598')) {
+        cleaned = '+' + cleaned;
     }
 
-    // Si aún no empieza con '+' y tiene una longitud esperada para un número sin prefijo de país (ej: 8 dígitos para un fijo, o 9 para celular sin 0 inicial en Uruguay si ya se removió)
-    // Esto es más genérico, se podría refinar con validaciones más estrictas de longitud.
-    // Por ahora, si no tiene '+' y se detectó '09', ya se manejó. Si no, se devuelve como está.
+    // Corregir +5980... a +598... (eliminar 0 después del prefijo)
+    if (cleaned.startsWith('+5980')) {
+        cleaned = '+598' + cleaned.substring(5);
+    }
+
+    // Corregir 09... a +5989... (asumir Uruguay para celulares que empiezan con 09)
+    if (cleaned.startsWith('09')) {
+        cleaned = '+598' + cleaned.substring(1);
+    }
 
     return cleaned;
 }
@@ -123,10 +118,20 @@ async function sendEmail(to, subject, text) {
 }
 
 async function sendWhatsApp(to, message) {
+    if (!twilioClient) {
+        console.warn('Twilio client not initialized. Skipping WhatsApp.');
+        return false;
+    }
     const formattedPhone = formatPhoneNumber(to);
     // Asegurar que el número de origen tenga el formato correcto para WhatsApp
     // Si la variable de entorno ya incluye "whatsapp:", lo quitamos para no duplicarlo
-    const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER.replace('whatsapp:', '');
+    const twilioWhatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+    if (!twilioWhatsappNumber) {
+        console.warn('TWILIO_WHATSAPP_NUMBER not set. Skipping WhatsApp.');
+        return false;
+    }
+
+    const fromNumber = twilioWhatsappNumber.replace('whatsapp:', '');
     
     try {
         await twilioClient.messages.create({
@@ -134,6 +139,7 @@ async function sendWhatsApp(to, message) {
             from: `whatsapp:${fromNumber}`,
             to: `whatsapp:${formattedPhone}`
         });
+        console.log(`WhatsApp sent to ${formattedPhone}`);
         return true;
     } catch (error) {
         console.error('Error sending WhatsApp:', error);
@@ -142,13 +148,25 @@ async function sendWhatsApp(to, message) {
 }
 
 async function sendSMS(to, message) {
+    if (!twilioClient) {
+        console.warn('Twilio client not initialized. Skipping SMS.');
+        return false;
+    }
     const formattedPhone = formatPhoneNumber(to);
+    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+    if (!twilioPhoneNumber) {
+        console.warn('TWILIO_PHONE_NUMBER not set. Skipping SMS.');
+        return false;
+    }
+
     try {
         await twilioClient.messages.create({
             body: message,
-            from: process.env.TWILIO_PHONE_NUMBER,
+            from: twilioPhoneNumber,
             to: formattedPhone
         });
+        console.log(`SMS sent to ${formattedPhone}`);
         return true;
     } catch (error) {
         console.error('Error sending SMS:', error);
@@ -177,26 +195,58 @@ export async function POST(request) {
             );
         }
 
-        // Guardar el log
-        const logPath = await logAssignments(assignments);
+        // Generar el log en texto
+        const fullLog = generateLogContent(assignments);
 
-        // Enviar notificaciones
-        const notificationPromises = assignments.map(async ({ giver, receiver }) => {
+        // Enviar notificaciones y capturar estado
+        const results = await Promise.all(assignments.map(async ({ giver, receiver }) => {
             const message = `Hola ${giver.name}! En el sorteo del amigo invisible te ha tocado regalar a: ${receiver.name}`;
 
-            return Promise.all([
+            const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
                 sendEmail(giver.email, 'Tu Amigo Invisible', message),
                 sendWhatsApp(giver.phone, message),
                 sendSMS(giver.phone, message)
             ]);
-        });
 
-        await Promise.all(notificationPromises);
+            return {
+                giver,
+                receiver,
+                status: {
+                    email: emailSuccess,
+                    whatsapp: waSuccess,
+                    sms: smsSuccess
+                }
+            };
+        }));
+
+        // Guardar resultado detallado en Firestore con un ID único garantizado
+        const drawRef = adminDb.collection('draws').doc();
+        const drawId = drawRef.id;
+        const drawData = {
+            id: drawId,
+            timestamp: new Date().toISOString(),
+            results
+        };
+
+        try {
+            await drawRef.set(drawData);
+        } catch (dbError) {
+            console.error('Error guardando en Firestore:', dbError);
+            // Podemos decidir si fallar o continuar; lo ideal es que si falla no se puedan reintentar pero no afecte el sorteo.
+        }
+
+        // Retornar resultados al frontend (sin revelar receptor)
+        const frontendResults = results.map(({ giver, status }) => ({
+            participant: giver,
+            status
+        }));
 
         return NextResponse.json({
             success: true,
-            message: 'Sorteo realizado y notificaciones enviadas con éxito',
-            logFile: logPath
+            message: 'Sorteo realizado y notificaciones enviadas',
+            logContent: fullLog,
+            drawId,
+            results: frontendResults
         });
 
     } catch (error) {

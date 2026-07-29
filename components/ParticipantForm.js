@@ -30,6 +30,7 @@ export default function ParticipantForm({ onAddParticipant }) {
             />
             <Input
                 label="Teléfono"
+                placeholder="ej. 099123456 o +59899123456"
                 value={participant.phone}
                 onChange={(e) => setParticipant({ ...participant, phone: e.target.value })}
             />

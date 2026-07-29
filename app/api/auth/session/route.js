@@ -6,7 +6,8 @@ export async function POST(request) {
         const { token } = await request.json();
 
         // Configurar la cookie de sesión
-        cookies().set({
+        const cookieStore = await cookies();
+        cookieStore.set({
             name: 'session',
             value: token,
             httpOnly: true,
