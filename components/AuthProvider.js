@@ -20,31 +20,36 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (auth) {
-            const unsubscribe = auth.onAuthStateChanged(async (user) => {
-                setUser(user);
+            try {
+                const unsubscribe = auth.onAuthStateChanged(async (user) => {
+                    setUser(user);
 
-                if (user) {
-                    // Actualizar la cookie de sesión cuando el usuario esté autenticado
-                    const token = await getIdToken();
-                    if (token) {
-                        try {
-                            await fetch('/api/auth/session', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({ token }),
-                            });
-                        } catch (error) {
-                            console.error('Error updating session:', error);
+                    if (user) {
+                        // Actualizar la cookie de sesión cuando el usuario esté autenticado
+                        const token = await getIdToken();
+                        if (token) {
+                            try {
+                                await fetch('/api/auth/session', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ token }),
+                                });
+                            } catch (error) {
+                                console.error('Error updating session:', error);
+                            }
                         }
                     }
-                }
 
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            } catch (error) {
+                console.error("Error en onAuthStateChanged:", error);
                 setLoading(false);
-            });
-
-            return () => unsubscribe();
+            }
         } else {
             // Si auth es null (ej. faltan variables de entorno), salimos del estado de carga para no dejar la pantalla en blanco
             setLoading(false);
