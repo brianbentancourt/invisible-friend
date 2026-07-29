@@ -1,19 +1,15 @@
-import admin from 'firebase-admin';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
-if (!admin.apps.length) {
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                // Manejar los saltos de línea en la clave privada si vienen escapados
-                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-            }),
-        });
-    } catch (error) {
-        console.error('Firebase admin initialization error', error.stack);
-    }
-}
+const credential = cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // Manejar los saltos de línea en la clave privada si vienen escapados
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+});
 
-export const adminAuth = admin.auth();
-export const adminDb = admin.firestore();
+const app = getApps().length === 0 ? initializeApp({ credential }) : getApps()[0];
+
+export const adminAuth = getAuth(app);
+export const adminDb = getFirestore(app);
