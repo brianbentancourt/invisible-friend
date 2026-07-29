@@ -2,14 +2,28 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 
-const credential = cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    // Manejar los saltos de línea en la clave privada si vienen escapados
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-});
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-const app = getApps().length === 0 ? initializeApp({ credential }) : getApps()[0];
+let app;
+
+if (getApps().length === 0) {
+    if (projectId && clientEmail && privateKey) {
+        const credential = cert({
+            projectId,
+            clientEmail,
+            privateKey
+        });
+        app = initializeApp({ credential });
+    } else {
+        console.warn('⚠️ Variables de entorno de Firebase Admin faltantes. Inicializando app vacía para el build.');
+        // App dummy para que no falle la compilación de Vercel (Next.js evalúa el archivo)
+        app = initializeApp({ projectId: 'dummy-project' });
+    }
+} else {
+    app = getApps()[0];
+}
 
 export const adminAuth = getAuth(app);
 export const adminDb = getFirestore(app);
