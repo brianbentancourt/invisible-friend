@@ -45,6 +45,9 @@ export function AuthProvider({ children }) {
             });
 
             return () => unsubscribe();
+        } else {
+            // Si auth es null (ej. faltan variables de entorno), salimos del estado de carga para no dejar la pantalla en blanco
+            setLoading(false);
         }
     }, [auth]);
 
