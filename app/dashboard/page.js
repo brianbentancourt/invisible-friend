@@ -126,6 +126,7 @@ export default function Dashboard() {
                     <ParticipantList 
                         participants={participants} 
                         drawResults={drawResults}
+                        drawId={drawId}
                         onRetry={handleRetry}
                         onUpdateParticipant={handleUpdateParticipant}
                     />

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
 import { adminDb } from '@/config/firebase-admin';
@@ -200,6 +201,10 @@ export async function POST(request) {
 
         // Enviar notificaciones y capturar estado
         const results = await Promise.all(assignments.map(async ({ giver, receiver }) => {
+            const secretToken = crypto.randomUUID();
+            
+            // Si quieres, aquí podrías modificar el mensaje para incluir el link si lo envías por WhatsApp, pero
+            // como la gracia es que el usuario lo comparta manualmente con el botón mágico, lo dejamos simple.
             const message = `Hola ${giver.name}! En el sorteo del amigo invisible te ha tocado regalar a: ${receiver.name}`;
 
             const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
@@ -211,6 +216,7 @@ export async function POST(request) {
             return {
                 giver,
                 receiver,
+                secretToken,
                 status: {
                     email: emailSuccess,
                     whatsapp: waSuccess,
@@ -235,10 +241,11 @@ export async function POST(request) {
             // Podemos decidir si fallar o continuar; lo ideal es que si falla no se puedan reintentar pero no afecte el sorteo.
         }
 
-        // Retornar resultados al frontend (sin revelar receptor)
-        const frontendResults = results.map(({ giver, status }) => ({
+        // Retornar resultados al frontend (sin revelar receptor, pero con el token para generar el enlace)
+        const frontendResults = results.map(({ giver, status, secretToken }) => ({
             participant: giver,
-            status
+            status,
+            secretToken
         }));
 
         return NextResponse.json({

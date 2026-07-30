@@ -6,8 +6,8 @@ export function middleware(request) {
     // Lista de rutas públicas que no requieren autenticación
     const publicRoutes = ['/auth/signin', '/'];
 
-    // Si es una ruta pública, permitir acceso
-    if (publicRoutes.includes(pathname)) {
+    // Si es una ruta pública o una de las de revelación de sorteo, permitir acceso
+    if (publicRoutes.includes(pathname) || pathname.startsWith('/sorteo/')) {
         return NextResponse.next();
     }
 

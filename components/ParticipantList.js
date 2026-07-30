@@ -1,7 +1,7 @@
 'use client';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Button, getKeyValue, Select, SelectItem } from "@nextui-org/react";
 
-export default function ParticipantList({ participants, drawResults, onRetry, onUpdateParticipant }) {
+export default function ParticipantList({ participants, drawResults, drawId, onRetry, onUpdateParticipant }) {
     const columns = [
         { key: "name", label: "NOMBRE" },
         { key: "phone", label: "TELÉFONO" },
@@ -72,18 +72,46 @@ export default function ParticipantList({ participants, drawResults, onRetry, on
                 );
             case "actions":
                 const hasError = status && (!status.email || !status.whatsapp || !status.sms);
-                if (hasError) {
-                    return (
+                
+                // Generar URL para compartir por WhatsApp manualmente si tenemos secretToken
+                let shareButton = null;
+                if (result?.secretToken && drawId) {
+                    // Detectar host dinámicamente o hardcodear el dominio (idealmente dinámico)
+                    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+                    const shareUrl = `${baseUrl}/sorteo/${drawId}/${result.secretToken}`;
+                    const waText = encodeURIComponent(`¡Hola! Ya hice el sorteo del Amigo Invisible 🎁\n\nEntra a este enlace secreto para ver a quién te toca regalar:\n${shareUrl}\n\n¡No le digas a nadie! 🤫`);
+                    const waLink = `https://wa.me/?text=${waText}`;
+
+                    shareButton = (
                         <Button 
                             size="sm" 
-                            color="warning" 
-                            onClick={() => onRetry(participant.email)}
+                            color="success" 
+                            variant="flat"
+                            as="a"
+                            href={waLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-2"
                         >
-                            Reintentar
+                            Compartir WhatsApp
                         </Button>
                     );
                 }
-                return null;
+
+                return (
+                    <div className="flex gap-2 items-center">
+                        {hasError && (
+                            <Button 
+                                size="sm" 
+                                color="warning" 
+                                onClick={() => onRetry(participant.email)}
+                            >
+                                Reintentar
+                            </Button>
+                        )}
+                        {shareButton}
+                    </div>
+                );
             default:
                 return getKeyValue(participant, columnKey);
         }
