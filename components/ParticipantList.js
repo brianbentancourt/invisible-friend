@@ -2,7 +2,7 @@
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Button, getKeyValue, Select, SelectItem } from "@nextui-org/react";
 import { useLanguage } from '@/components/LanguageProvider';
 
-export default function ParticipantList({ participants, drawResults, drawId, onRetry, onUpdateParticipant }) {
+export default function ParticipantList({ participants, drawResults, drawId, onRetry, onUpdateParticipant, onRemoveParticipant }) {
     const { t } = useLanguage();
     const columns = [
         { key: "name", label: t('participant_list.col_name') },
@@ -14,6 +14,9 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
     if (drawResults) {
         columns.push({ key: "notifications", label: t('participant_list.col_notifications') });
         columns.push({ key: "actions", label: t('participant_list.col_actions') });
+    } else {
+        // Mostrar acciones para poder eliminar antes de sortear
+        columns.push({ key: "actions", label: t('participant_list.col_actions') || "ACCIONES" });
     }
 
     const getStatusIcon = (success) => (
@@ -73,6 +76,20 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
                     </div>
                 );
             case "actions":
+                if (!drawResults) {
+                    return (
+                        <Button 
+                            isIconOnly 
+                            color="danger" 
+                            variant="light" 
+                            aria-label="Eliminar"
+                            onPress={() => onRemoveParticipant?.(participant.id)}
+                        >
+                            🗑️
+                        </Button>
+                    );
+                }
+
                 const hasError = status && (!status.email || !status.whatsapp || !status.sms);
                 
                 // Generar URL para compartir por WhatsApp manualmente si tenemos secretToken

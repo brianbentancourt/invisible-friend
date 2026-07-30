@@ -11,6 +11,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 
 export default function Dashboard() {
     const [participants, setParticipants] = useState([]);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [drawResults, setDrawResults] = useState(null);
     const [drawLog, setDrawLog] = useState(null);
     const [drawId, setDrawId] = useState(null);
@@ -22,6 +23,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (user?.email) {
+            // Verificar estado premium
             fetch('/api/user/status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -32,8 +34,61 @@ export default function Dashboard() {
                 if (data.isPremium) setIsPremium(true);
             })
             .catch(console.error);
+
+            // Cargar participantes guardados desde Firestore
+            fetch(`/api/user/participants?email=${encodeURIComponent(user.email)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.participants && data.participants.length > 0) {
+                    setParticipants(data.participants);
+                } else {
+                    // Si no tiene en la nube, revisamos si dejó algo en localStorage localmente
+                    const localData = localStorage.getItem('invisible_draft_participants');
+                    if (localData) setParticipants(JSON.parse(localData));
+                }
+                setIsInitialLoad(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsInitialLoad(false);
+            });
+        } else if (user === null) {
+            // Usuario no logueado (Guest mode)
+            const localData = localStorage.getItem('invisible_draft_participants');
+            if (localData) {
+                try {
+                    setParticipants(JSON.parse(localData));
+                } catch (e) {
+                    console.error("Error parsing local participants");
+                }
+            }
+            setIsInitialLoad(false);
         }
     }, [user]);
+
+    // Función para guardar participantes (debounce opcional)
+    const saveParticipants = async (newParticipants) => {
+        setParticipants(newParticipants);
+
+        // Siempre guardar en localStorage como backup
+        localStorage.setItem('invisible_draft_participants', JSON.stringify(newParticipants));
+
+        // Si hay usuario, sincronizar con Firestore
+        if (user?.email) {
+            try {
+                await fetch('/api/user/participants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userEmail: user.email,
+                        participants: newParticipants
+                    })
+                });
+            } catch (error) {
+                console.error('Error al sincronizar participantes:', error);
+            }
+        }
+    };
 
     const handleUpgrade = async () => {
         if (!user?.email) return;
@@ -58,13 +113,17 @@ export default function Dashboard() {
     };
 
     const handleAddParticipant = (participant) => {
-        setParticipants([...participants, { ...participant, id: crypto.randomUUID(), exclusions: [] }]);
+        saveParticipants([...participants, { ...participant, id: crypto.randomUUID(), exclusions: [] }]);
     };
 
     const handleUpdateParticipant = (id, updates) => {
-        setParticipants(participants.map(p => 
+        saveParticipants(participants.map(p => 
             p.id === id ? { ...p, ...updates } : p
         ));
+    };
+
+    const handleRemoveParticipant = (id) => {
+        saveParticipants(participants.filter(p => p.id !== id));
     };
 
     const handleDraw = async () => {
@@ -199,6 +258,7 @@ export default function Dashboard() {
                             drawId={drawId}
                             onRetry={handleRetry}
                             onUpdateParticipant={handleUpdateParticipant}
+                            onRemoveParticipant={handleRemoveParticipant}
                         />
                         {participants.length >= 2 && !drawResults && (
                             <Button 
@@ -226,7 +286,7 @@ export default function Dashboard() {
                                         setDrawResults(null);
                                         setDrawId(null);
                                         setDrawLog(null);
-                                        setParticipants([]);
+                                        // No borramos los participantes para permitir reutilizarlos
                                     }}
                                 >
                                     Nuevo Sorteo
