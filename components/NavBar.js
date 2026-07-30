@@ -31,15 +31,39 @@ export default function Navbar() {
             </NavbarBrand>
             <NavbarContent justify="end">
                 <NavbarItem>
-                    <Dropdown>
+                    <Dropdown placement="bottom-end">
                         <DropdownTrigger>
-                            <Button variant="light" size="sm" className="text-lg">
-                                {locale === 'en' ? '🇺🇸 EN' : '🇪🇸 ES'}
+                            <Button 
+                                variant="flat" 
+                                size="sm" 
+                                radius="full"
+                                className="font-semibold bg-default-100 hover:bg-default-200"
+                                startContent={
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-default-500">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                }
+                            >
+                                {locale === 'en' ? 'EN' : 'ES'}
                             </Button>
                         </DropdownTrigger>
-                        <DropdownMenu aria-label="Cambiar idioma" onAction={(key) => changeLanguage(key)}>
-                            <DropdownItem key="es">🇪🇸 Español</DropdownItem>
-                            <DropdownItem key="en">🇺🇸 English</DropdownItem>
+                        <DropdownMenu 
+                            aria-label="Cambiar idioma" 
+                            onAction={(key) => changeLanguage(key)}
+                            selectedKeys={new Set([locale])}
+                            selectionMode="single"
+                            color="primary"
+                            variant="flat"
+                            className="w-[150px]"
+                        >
+                            <DropdownItem key="es" startContent={<span className="text-xl">🇪🇸</span>} description="Español">
+                                ES
+                            </DropdownItem>
+                            <DropdownItem key="en" startContent={<span className="text-xl">🇺🇸</span>} description="English">
+                                EN
+                            </DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </NavbarItem>
