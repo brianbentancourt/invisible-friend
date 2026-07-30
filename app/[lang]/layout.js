@@ -6,7 +6,7 @@ import '@/app/globals.css';
 import Navbar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { LanguageProvider } from '@/components/LanguageProvider';
-import { GoogleAdSense } from '@next/third-parties/google';
+import Script from 'next/script';
 
 import en from '@/messages/en.json';
 import es from '@/messages/es.json';
@@ -70,7 +70,12 @@ export default function RootLayout({ children, params }) {
         </Providers>
       </body>
       {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
-        <GoogleAdSense publisherId={process.env.NEXT_PUBLIC_ADSENSE_PUB_ID} />
+        <Script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}`}
+          crossOrigin="anonymous"
+          strategy="lazyOnload"
+        />
       )}
     </html>
   );
