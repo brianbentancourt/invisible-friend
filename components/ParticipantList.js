@@ -1,17 +1,19 @@
 'use client';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Button, getKeyValue, Select, SelectItem } from "@nextui-org/react";
+import { useLanguage } from '@/components/LanguageProvider';
 
 export default function ParticipantList({ participants, drawResults, drawId, onRetry, onUpdateParticipant }) {
+    const { t } = useLanguage();
     const columns = [
-        { key: "name", label: "NOMBRE" },
-        { key: "phone", label: "TELÉFONO" },
-        { key: "email", label: "EMAIL" },
-        { key: "exclusions", label: "NO REGALAR A" },
+        { key: "name", label: t('participant_list.col_name') },
+        { key: "phone", label: t('participant_list.col_phone') },
+        { key: "email", label: t('participant_list.col_email') },
+        { key: "exclusions", label: t('participant_list.col_exclusions') },
     ];
 
     if (drawResults) {
-        columns.push({ key: "notifications", label: "NOTIFICACIONES" });
-        columns.push({ key: "actions", label: "ACCIONES" });
+        columns.push({ key: "notifications", label: t('participant_list.col_notifications') });
+        columns.push({ key: "actions", label: t('participant_list.col_actions') });
     }
 
     const getStatusIcon = (success) => (
@@ -39,7 +41,7 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
                 return (
                     <Select
                         selectionMode="multiple"
-                        placeholder="Seleccionar..."
+                        placeholder={t('participant_list.select')}
                         size="sm"
                         className="max-w-xs"
                         selectedKeys={new Set(participant.exclusions || [])}
@@ -56,16 +58,16 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
                     </Select>
                 );
             case "notifications":
-                if (!status) return <span className="text-gray-400">Pendiente...</span>;
+                if (!status) return <span className="text-gray-400">{t('participant_list.pending')}</span>;
                 return (
                     <div className="flex gap-2">
-                        <Tooltip content={`Email: ${status.email ? 'Enviado' : 'Falló'}`}>
+                        <Tooltip content={`Email: ${status.email ? t('participant_list.sent') : t('participant_list.failed')}`}>
                             <span>📧 {getStatusIcon(status.email)}</span>
                         </Tooltip>
-                        <Tooltip content={`WhatsApp: ${status.whatsapp ? 'Enviado' : 'Falló'}`}>
+                        <Tooltip content={`WhatsApp: ${status.whatsapp ? t('participant_list.sent') : t('participant_list.failed')}`}>
                             <span>📱 {getStatusIcon(status.whatsapp)}</span>
                         </Tooltip>
-                        <Tooltip content={`SMS: ${status.sms ? 'Enviado' : 'Falló'}`}>
+                        <Tooltip content={`SMS: ${status.sms ? t('participant_list.sent') : t('participant_list.failed')}`}>
                             <span>💬 {getStatusIcon(status.sms)}</span>
                         </Tooltip>
                     </div>
@@ -79,7 +81,8 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
                     // Detectar host dinámicamente o hardcodear el dominio (idealmente dinámico)
                     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
                     const shareUrl = `${baseUrl}/sorteo/${drawId}/${result.secretToken}`;
-                    const waText = encodeURIComponent(`¡Hola! Ya hice el sorteo del Amigo Invisible 🎁\n\nEntra a este enlace secreto para ver a quién te toca regalar:\n${shareUrl}\n\n¡No le digas a nadie! 🤫`);
+                    const waTextTemplate = t('participant_list.whatsapp_message');
+                    const waText = encodeURIComponent(waTextTemplate.replace('{url}', shareUrl));
                     const waLink = `https://wa.me/?text=${waText}`;
 
                     shareButton = (
@@ -93,7 +96,7 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
                             rel="noopener noreferrer"
                             className="ml-2"
                         >
-                            Compartir WhatsApp
+                            {t('participant_list.share_whatsapp')}
                         </Button>
                     );
                 }
@@ -106,7 +109,7 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
                                 color="warning" 
                                 onClick={() => onRetry(participant.email)}
                             >
-                                Reintentar
+                                {t('participant_list.retry')}
                             </Button>
                         )}
                         {shareButton}
@@ -122,7 +125,7 @@ export default function ParticipantList({ participants, drawResults, drawId, onR
             <TableHeader columns={columns}>
                 {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
             </TableHeader>
-            <TableBody items={sortedParticipants} emptyContent={"No hay participantes aún."}>
+            <TableBody items={sortedParticipants} emptyContent={t('participant_list.empty')}>
                 {(item) => (
                     <TableRow key={item.id || item.email}>
                         {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

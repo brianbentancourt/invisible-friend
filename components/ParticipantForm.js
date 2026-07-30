@@ -1,47 +1,51 @@
 'use client';
 import { useState } from 'react';
-import { Input, Button } from "@nextui-org/react";
+import { Button, Input } from "@nextui-org/react";
+import { useLanguage } from '@/components/LanguageProvider';
 import { toast } from 'react-toastify';
 
 export default function ParticipantForm({ onAddParticipant }) {
-    const [participant, setParticipant] = useState({
-        name: '',
-        phone: '',
-        email: ''
-    });
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const { t } = useLanguage();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!participant.name || !participant.phone) {
-            toast.error('Por favor completa todos los campos');
+        if (!name || !phone) {
+            toast.error(t('participant_form.error_incomplete'));
             return;
         }
-        onAddParticipant(participant);
-        setParticipant({ name: '', phone: '', email: '' });
-        toast.success('Participante agregado correctamente');
+        onAddParticipant({ name, email, phone });
+        setName('');
+        setEmail('');
+        setPhone('');
+        toast.success(t('participant_form.success'));
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
-                label="Nombre"
-                value={participant.name}
-                onChange={(e) => setParticipant({ ...participant, name: e.target.value })}
+                label={t('participant_form.name')}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
             />
             <Input
-                label="Teléfono"
-                placeholder="ej. 099123456 o +59899123456"
-                value={participant.phone}
-                onChange={(e) => setParticipant({ ...participant, phone: e.target.value })}
-            />
-            <Input
-                label="Email"
+                label={t('participant_form.email')}
                 type="email"
-                value={participant.email}
-                onChange={(e) => setParticipant({ ...participant, email: e.target.value })}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
             />
-            <Button color="primary" type="submit">
-                Agregar Participante
+            <Input
+                label={t('participant_form.phone')}
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+            />
+            <Button type="submit" color="primary">
+                {t('participant_form.add')}
             </Button>
         </form>
     );

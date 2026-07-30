@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "dashboard": "Dashboard"
+  },
+  "landing": {
+    "tagline": "✨ The smartest way to organize your draw",
+    "title1": "Organize your",
+    "title2": "Secret Santa",
+    "title3": "in Seconds",
+    "description": "Forget about paper slips. Add your friends, set exclusion rules, and let the system notify everyone via Email or WhatsApp instantly.",
+    "cta_start": "Start the Draw",
+    "cta_dashboard": "Go to my Dashboard",
+    "features_title": "How does it work?",
+    "features_subtitle": "A simple, fast, and 100% cheat-free process.",
+    "f1_title": "Add Participants",
+    "f1_desc": "Add your friends, family, or coworkers. As many as you want!",
+    "f2_title": "Set Exclusions",
+    "f2_desc": "John can't give a gift to Mary? Easily configure rules to avoid unwanted matches.",
+    "f3_title": "Automatic Draw",
+    "f3_desc": "Our algorithm handles everything. No one will know who they got until they receive the message.",
+    "f4_title": "Notifications",
+    "f4_desc": "Send the results magically via Email, WhatsApp, or SMS."
+  },
+  "dashboard": {
+    "title": "Welcome to Secret Santa",
+    "premium": "👑 Premium User",
+    "free_plan": "Free Plan (Max 15 participants)",
+    "upgrade": "⭐ Upgrade to Premium",
+    "add_participant": "Add Participant",
+    "participants": "Participants",
+    "people": "people",
+    "draw_button": "Run Draw",
+    "drawing": "Running draw...",
+    "download_log": "Download Log",
+    "new_draw": "New Draw",
+    "errors": {
+      "min_participants": "At least 2 participants are required",
+      "draw_success": "Draw completed successfully! Notifications have been sent.",
+      "draw_error": "Error running the draw",
+      "payment_init_error": "Error initializing payment",
+      "payment_conn_error": "Error connecting to MercadoPago",
+      "retry_success": "Notification retried",
+      "retry_error": "Error retrying",
+      "retrying": "Retrying sending..."
+    }
+  },
+  "participant_form": {
+    "name": "Name",
+    "email": "Email (Required for free draw)",
+    "phone": "Phone (With country code, e.g., +1)",
+    "add": "Add",
+    "error_incomplete": "Please complete all fields",
+    "success": "Participant added successfully"
+  },
+  "participant_list": {
+    "col_name": "NAME",
+    "col_phone": "PHONE",
+    "col_email": "EMAIL",
+    "col_exclusions": "DO NOT GIFT TO",
+    "col_notifications": "NOTIFICATIONS",
+    "col_actions": "ACTIONS",
+    "select": "Select...",
+    "pending": "Pending...",
+    "retry": "Retry",
+    "share_whatsapp": "Share WhatsApp",
+    "empty": "No participants yet.",
+    "sent": "Sent",
+    "failed": "Failed",
+    "whatsapp_message": "Hello! I just ran the Secret Santa draw 🎁\n\nEnter this secret link to see who you have to gift:\n{url}\n\nDon't tell anyone! 🤫"
+  },
+  "reveal": {
+    "hello": "Hello,",
+    "subtitle": "Your organizer has run the Secret Santa draw. Are you ready to find out who you have to gift?",
+    "reveal_btn": "🎁 Reveal my friend",
+    "gift_to": "You have to gift...",
+    "not_found_title": "Draw not found",
+    "not_found_desc": "The link seems to be invalid or the draw was deleted.",
+    "invalid_link": "Invalid Link",
+    "invalid_desc": "This magic link is incorrect or has expired.",
+    "server_error": "Server error",
+    "server_error_desc": "There was a problem loading the draw. Try again later.",
+    "donation_prompt": "Did you like using this free tool?"
+  },
+  "api": {
+    "email_subject": "Your Secret Santa",
+    "email_message": "Hello {giver}! In the Secret Santa draw, you have to gift: {receiver}"
+  }
+}

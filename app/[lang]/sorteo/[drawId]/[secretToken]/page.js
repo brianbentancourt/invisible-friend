@@ -2,9 +2,12 @@ import { adminDb } from '@/config/firebase-admin';
 import RevealCard from '@/components/RevealCard';
 import DonationButton from '@/components/DonationButton';
 import AdBanner from '@/components/AdBanner';
+import en from '@/messages/en.json';
+import es from '@/messages/es.json';
 
 export default async function SorteoRevealPage({ params }) {
-  const { drawId, secretToken } = params;
+  const { drawId, secretToken, lang } = params;
+  const dict = lang === 'en' ? en : es;
 
   try {
     const drawDoc = await adminDb.collection('draws').doc(drawId).get();
@@ -13,8 +16,8 @@ export default async function SorteoRevealPage({ params }) {
       return (
         <div className="min-h-screen flex items-center justify-center text-center p-4">
           <div>
-            <h1 className="text-3xl font-bold text-danger mb-4">Sorteo no encontrado</h1>
-            <p className="text-default-500">El enlace parece ser inválido o el sorteo fue eliminado.</p>
+            <h1 className="text-3xl font-bold text-danger mb-4">{dict.reveal.not_found_title}</h1>
+            <p className="text-default-500">{dict.reveal.not_found_desc}</p>
           </div>
         </div>
       );
@@ -30,8 +33,8 @@ export default async function SorteoRevealPage({ params }) {
       return (
         <div className="min-h-screen flex items-center justify-center text-center p-4">
           <div>
-            <h1 className="text-3xl font-bold text-danger mb-4">Enlace Inválido</h1>
-            <p className="text-default-500">Este enlace mágico es incorrecto o ha caducado.</p>
+            <h1 className="text-3xl font-bold text-danger mb-4">{dict.reveal.invalid_link}</h1>
+            <p className="text-default-500">{dict.reveal.invalid_desc}</p>
           </div>
         </div>
       );
@@ -48,7 +51,7 @@ export default async function SorteoRevealPage({ params }) {
         </div>
 
         <div className="mb-10 text-center">
-          <p className="text-default-500 mb-4 text-sm">¿Te gustó usar esta herramienta gratuita?</p>
+          <p className="text-default-500 mb-4 text-sm">{dict.reveal.donation_prompt}</p>
           <DonationButton />
         </div>
       </div>
@@ -59,8 +62,8 @@ export default async function SorteoRevealPage({ params }) {
     return (
       <div className="min-h-screen flex items-center justify-center text-center p-4">
         <div>
-          <h1 className="text-3xl font-bold text-danger mb-4">Error del servidor</h1>
-          <p className="text-default-500">Hubo un problema al cargar el sorteo. Inténtalo más tarde.</p>
+          <h1 className="text-3xl font-bold text-danger mb-4">{dict.reveal.server_error}</h1>
+          <p className="text-default-500">{dict.reveal.server_error_desc}</p>
         </div>
       </div>
     );

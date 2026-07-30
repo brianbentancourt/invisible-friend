@@ -5,38 +5,40 @@ import { useAuth } from '@/components/AuthProvider';
 import { Button, Card, CardBody } from '@nextui-org/react';
 import { motion } from 'framer-motion';
 import AdBanner from '@/components/AdBanner';
+import { useLanguage } from '@/components/LanguageProvider';
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { t, locale } = useLanguage();
 
   const handleCTA = () => {
     if (user) {
-      router.push('/dashboard');
+      router.push(`/${locale}/dashboard`);
     } else {
-      router.push('/auth/signin');
+      router.push(`/${locale}/auth/signin`);
     }
   };
 
   const features = [
     {
-      title: "Agrega Participantes",
-      description: "Añade a tus amigos, familiares o compañeros de trabajo. ¡Tantos como quieras!",
+      title: t('landing.f1_title'),
+      description: t('landing.f1_desc'),
       icon: "👥",
     },
     {
-      title: "Establece Exclusiones",
-      description: "¿Juan no puede regalarle a María? Configura reglas fácilmente para evitar cruces no deseados.",
+      title: t('landing.f2_title'),
+      description: t('landing.f2_desc'),
       icon: "⚙️",
     },
     {
-      title: "Sorteo Automático",
-      description: "Nuestro algoritmo se encarga de todo. Nadie sabrá quién le toca a quién hasta que reciban el mensaje.",
+      title: t('landing.f3_title'),
+      description: t('landing.f3_desc'),
       icon: "🎲",
     },
     {
-      title: "Notificaciones",
-      description: "Envía los resultados mágicamente por Correo Electrónico, WhatsApp o SMS.",
+      title: t('landing.f4_title'),
+      description: t('landing.f4_desc'),
       icon: "📱",
     },
   ];
@@ -57,14 +59,14 @@ export default function LandingPage() {
             className="inline-block"
           >
             <span className="px-4 py-1.5 rounded-full bg-default-100 border border-default-200 text-sm font-medium tracking-wide text-default-600 mb-6 inline-block">
-              ✨ La forma más inteligente de organizar tu sorteo
+              {t('landing.tagline')}
             </span>
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
-              Organiza tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Amigo Invisible</span><br />
-              en Segundos
+              {t('landing.title1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{t('landing.title2')}</span><br />
+              {t('landing.title3')}
             </h1>
             <p className="text-lg md:text-xl text-default-500 max-w-2xl mx-auto leading-relaxed">
-              Olvídate de los papelitos. Agrega a tus amigos, define reglas de exclusión y deja que el sistema les notifique a todos por Email o WhatsApp al instante.
+              {t('landing.description')}
             </p>
           </motion.div>
 
@@ -81,7 +83,7 @@ export default function LandingPage() {
               isLoading={loading}
               onPress={handleCTA}
             >
-              {user ? "Ir a mi Dashboard" : "Comenzar el Sorteo"}
+              {user ? t('landing.cta_dashboard') : t('landing.cta_start')}
             </Button>
           </motion.div>
         </section>
@@ -95,8 +97,8 @@ export default function LandingPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">¿Cómo funciona?</h2>
-            <p className="text-default-500 mt-4 text-lg">Un proceso simple, rápido y 100% libre de trampas.</p>
+            <h2 className="text-3xl md:text-4xl font-bold">{t('landing.features_title')}</h2>
+            <p className="text-default-500 mt-4 text-lg">{t('landing.features_subtitle')}</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

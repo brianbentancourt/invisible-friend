@@ -1,21 +1,62 @@
 import { NextResponse } from 'next/server';
 
+const locales = ['es', 'en'];
+const defaultLocale = 'es';
+
+function getLocale(request) {
+    const cookie = request.cookies.get('NEXT_LOCALE')?.value;
+    if (cookie && locales.includes(cookie)) {
+        return cookie;
+    }
+    
+    // Fallback a accept-language (simple)
+    const acceptLang = request.headers.get('accept-language');
+    if (acceptLang) {
+        if (acceptLang.includes('en')) return 'en';
+        if (acceptLang.includes('es')) return 'es';
+    }
+    
+    return defaultLocale;
+}
+
 export function middleware(request) {
     const { pathname } = request.nextUrl;
 
-    // Lista de rutas públicas que no requieren autenticación
-    const publicRoutes = ['/auth/signin', '/'];
-
-    // Si es una ruta pública o una de las de revelación de sorteo, permitir acceso
-    if (publicRoutes.includes(pathname) || pathname.startsWith('/sorteo/')) {
+    // Ignorar rutas estáticas y api (esto ya lo hace el matcher, pero por si acaso)
+    if (
+        pathname.startsWith('/api') ||
+        pathname.startsWith('/_next') ||
+        pathname.includes('.')
+    ) {
         return NextResponse.next();
     }
 
-    // Para las rutas protegidas, verificar el token en las cookies
+    // Comprobar si la ruta actual tiene un locale
+    const pathnameHasLocale = locales.some(
+        (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+    );
+
+    // Si no tiene locale, redirigir
+    if (!pathnameHasLocale) {
+        const locale = getLocale(request);
+        request.nextUrl.pathname = `/${locale}${pathname}`;
+        return NextResponse.redirect(request.nextUrl);
+    }
+
+    // Extraer el locale actual de la URL
+    const currentLocale = locales.find((locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`);
+    
+    // Validar autenticación
+    const publicRoutes = [`/${currentLocale}/auth/signin`, `/${currentLocale}`];
+    
+    if (publicRoutes.includes(pathname) || pathname.startsWith(`/${currentLocale}/sorteo/`)) {
+        return NextResponse.next();
+    }
+
     const token = request.cookies.get('session');
 
-    if (!token && pathname !== '/auth/signin') {
-        return NextResponse.redirect(new URL('/auth/signin', request.url));
+    if (!token && pathname !== `/${currentLocale}/auth/signin`) {
+        return NextResponse.redirect(new URL(`/${currentLocale}/auth/signin`, request.url));
     }
 
     return NextResponse.next();

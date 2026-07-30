@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@nextui-org/react';
+import { useLanguage } from '@/components/LanguageProvider';
 
 export default function RevealCard({ giverName, receiverName }) {
   const [revealed, setRevealed] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
@@ -15,10 +17,10 @@ export default function RevealCard({ giverName, receiverName }) {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          ¡Hola, <span className="text-primary">{giverName}</span>!
+          {t('reveal.hello')} <span className="text-primary">{giverName}</span>!
         </h1>
         <p className="text-lg text-default-500 mb-12 max-w-lg">
-          Tu organizador ha hecho el sorteo del Amigo Invisible. ¿Estás listo para descubrir a quién te toca regalar?
+          {t('reveal.subtitle')}
         </p>
       </motion.div>
 
@@ -39,7 +41,7 @@ export default function RevealCard({ giverName, receiverName }) {
                 className="text-xl px-12 py-8 rounded-full font-bold shadow-xl hover:scale-105 transform transition-all"
                 onPress={() => setRevealed(true)}
               >
-                🎁 Revelar mi amigo
+                {t('reveal.reveal_btn')}
               </Button>
             </motion.div>
           ) : (
@@ -51,7 +53,7 @@ export default function RevealCard({ giverName, receiverName }) {
               className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl shadow-2xl border border-primary/30 p-6"
             >
               <span className="text-sm font-semibold uppercase tracking-widest text-default-500 mb-2">
-                Te toca regalar a...
+                {t('reveal.gift_to')}
               </span>
               <h2 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 {receiverName}

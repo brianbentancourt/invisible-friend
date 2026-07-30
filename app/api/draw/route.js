@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
 import { adminDb } from '@/config/firebase-admin';
+import en from '@/messages/en.json';
+import es from '@/messages/es.json';
 
 // Configurar SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -177,11 +179,12 @@ async function sendSMS(to, message) {
 
 export async function POST(request) {
     try {
-        const { participants, userEmail } = await request.json();
+        const { participants, userEmail, lang } = await request.json();
+        const dict = lang === 'en' ? en : es;
 
         if (!Array.isArray(participants) || participants.length < 2) {
             return NextResponse.json(
-                { error: 'Se necesitan al menos 2 participantes' },
+                { error: dict.dashboard.errors.min_participants },
                 { status: 400 }
             );
         }
@@ -209,7 +212,7 @@ export async function POST(request) {
 
         if (!assignments) {
             return NextResponse.json(
-                { error: 'No se pudo generar una asignación válida' },
+                { error: dict.dashboard.errors.draw_error },
                 { status: 500 }
             );
         }
@@ -223,10 +226,13 @@ export async function POST(request) {
             
             // Si quieres, aquí podrías modificar el mensaje para incluir el link si lo envías por WhatsApp, pero
             // como la gracia es que el usuario lo comparta manualmente con el botón mágico, lo dejamos simple.
-            const message = `Hola ${giver.name}! En el sorteo del amigo invisible te ha tocado regalar a: ${receiver.name}`;
+            const subject = dict.api.email_subject;
+            const message = dict.api.email_message
+                .replace('{giver}', giver.name)
+                .replace('{receiver}', receiver.name);
 
             const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
-                sendEmail(giver.email, 'Tu Amigo Invisible', message),
+                sendEmail(giver.email, subject, message),
                 sendWhatsApp(giver.phone, message),
                 isPremium ? sendSMS(giver.phone, message) : Promise.resolve(false)
             ]);

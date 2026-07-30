@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'react-toastify';
 import DonationButton from '@/components/DonationButton';
 import AdBanner from '@/components/AdBanner';
+import { useLanguage } from '@/components/LanguageProvider';
 
 export default function Dashboard() {
     const [participants, setParticipants] = useState([]);
@@ -17,6 +18,7 @@ export default function Dashboard() {
     const [isPremium, setIsPremium] = useState(false);
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
     const { user } = useAuth();
+    const { t, locale } = useLanguage();
 
     useEffect(() => {
         if (user?.email) {
@@ -67,7 +69,7 @@ export default function Dashboard() {
 
     const handleDraw = async () => {
         if (participants.length < 2) {
-            toast.error('Se necesitan al menos 2 participantes');
+            toast.error(t('dashboard.errors.min_participants'));
             return;
         }
 
@@ -78,24 +80,21 @@ export default function Dashboard() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ participants, userEmail: user?.email }),
+                body: JSON.stringify({ participants, userEmail: user?.email, lang: locale }),
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Error al realizar el sorteo');
+            if (data.success) {
+                setDrawLog(data.logContent);
+                setDrawId(data.drawId);
+                setDrawResults(data.results);
+                toast.success(t('dashboard.errors.draw_success'));
+            } else {
+                toast.error(data.error || t('dashboard.errors.draw_error'));
             }
-
-            setDrawId(data.drawId);
-            setDrawResults(data.results);
-            setDrawLog(data.logContent);
-            toast.success('¡Sorteo realizado con éxito! Las notificaciones han sido enviadas.');
-            // No limpiar participantes para poder ver el estado
-            // setParticipants([]); 
-
         } catch (error) {
-            toast.error(error.message || 'Error al realizar el sorteo');
+            toast.error(t('dashboard.errors.draw_error'));
         } finally {
             setIsLoading(false);
         }
@@ -151,11 +150,11 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold">Bienvenido al Amigo Invisible</h1>
+                    <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
                     {isPremium ? (
-                        <span className="text-sm font-semibold text-warning">👑 Usuario Premium</span>
+                        <span className="text-sm font-semibold text-warning">{t('dashboard.premium')}</span>
                     ) : (
-                        <span className="text-sm text-default-500">Plan Gratuito (Máx 15 participantes)</span>
+                        <span className="text-sm text-default-500">{t('dashboard.free_plan')}</span>
                     )}
                 </div>
                 <div className="flex gap-4 items-center">
@@ -167,7 +166,7 @@ export default function Dashboard() {
                             isLoading={isCheckoutLoading}
                             onPress={handleUpgrade}
                         >
-                            ⭐ Upgrade a Premium
+                            {t('dashboard.upgrade')}
                         </Button>
                     )}
                     <DonationButton />
@@ -176,56 +175,65 @@ export default function Dashboard() {
             
             <AdBanner />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                <div>
-                    <h2 className="text-xl font-semibold mb-4">
-                        Agregar Participante
-                    </h2>
-                    <ParticipantForm onAddParticipant={handleAddParticipant} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+                {/* Panel Izquierdo: Formulario */}
+                <div className="lg:col-span-1">
+                    <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100">
+                        <h2 className="text-xl font-bold mb-4">{t('dashboard.add_participant')}</h2>
+                        <ParticipantForm onAddParticipant={handleAddParticipant} />
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-xl font-semibold mb-4 flex justify-between items-center">
-                        Participantes
-                        <span className="text-lg text-default-500">{participants.length} personas</span>
-                    </h2>
-                    <ParticipantList 
-                        participants={participants} 
-                        drawResults={drawResults}
-                        drawId={drawId}
-                        onRetry={handleRetry}
-                        onUpdateParticipant={handleUpdateParticipant}
-                    />
-                    {participants.length >= 2 && !drawResults && (
-                        <Button
-                            color="success"
-                            onClick={handleDraw}
-                            isLoading={isLoading}
-                            className="mt-4"
-                        >
-                            {isLoading ? 'Realizando sorteo...' : 'Realizar Sorteo'}
-                        </Button>
-                    )}
-                    {drawResults && (
-                        <div className="flex gap-4 mt-4">
-                            <Button
-                                color="primary"
-                                onClick={handleDownloadLog}
-                            >
-                                Descargar Log
-                            </Button>
-                            <Button
-                                color="warning"
-                                onClick={() => {
-                                    setDrawResults(null);
-                                    setDrawId(null);
-                                    setDrawLog(null);
-                                    setParticipants([]);
-                                }}
-                            >
-                                Nuevo Sorteo
-                            </Button>
+
+                {/* Panel Derecho: Lista */}
+                <div className="lg:col-span-2">
+                    <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100 min-h-[400px] flex flex-col">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold">{t('dashboard.participants')}</h2>
+                            <span className="text-sm text-default-500 bg-default-100 px-3 py-1 rounded-full">
+                                {participants.length} {t('dashboard.people')}
+                            </span>
                         </div>
-                    )}
+                        <ParticipantList 
+                            participants={participants} 
+                            drawResults={drawResults}
+                            drawId={drawId}
+                            onRetry={handleRetry}
+                            onUpdateParticipant={handleUpdateParticipant}
+                        />
+                        {participants.length >= 2 && !drawResults && (
+                            <Button 
+                                color="primary" 
+                                size="lg"
+                                className="w-full sm:w-auto font-bold mt-4"
+                                onPress={handleDraw}
+                                isLoading={isLoading}
+                                isDisabled={participants.length < 2}
+                            >
+                                {isLoading ? t('dashboard.drawing') : `🎲 ${t('dashboard.draw_button')}`}
+                            </Button>
+                        )}
+                        {drawResults && (
+                            <div className="flex gap-4 mt-4">
+                                <Button
+                                    color="primary"
+                                    onClick={handleDownloadLog}
+                                >
+                                    Descargar Log
+                                </Button>
+                                <Button
+                                    color="warning"
+                                    onClick={() => {
+                                        setDrawResults(null);
+                                        setDrawId(null);
+                                        setDrawLog(null);
+                                        setParticipants([]);
+                                    }}
+                                >
+                                    Nuevo Sorteo
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

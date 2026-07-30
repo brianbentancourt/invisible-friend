@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "dashboard": "Dashboard"
+  },
+  "landing": {
+    "tagline": "✨ La forma más inteligente de organizar tu sorteo",
+    "title1": "Organiza tu",
+    "title2": "Amigo Invisible",
+    "title3": "en Segundos",
+    "description": "Olvídate de los papelitos. Agrega a tus amigos, define reglas de exclusión y deja que el sistema les notifique a todos por Email o WhatsApp al instante.",
+    "cta_start": "Comenzar el Sorteo",
+    "cta_dashboard": "Ir a mi Dashboard",
+    "features_title": "¿Cómo funciona?",
+    "features_subtitle": "Un proceso simple, rápido y 100% libre de trampas.",
+    "f1_title": "Agrega Participantes",
+    "f1_desc": "Añade a tus amigos, familiares o compañeros de trabajo. ¡Tantos como quieras!",
+    "f2_title": "Establece Exclusiones",
+    "f2_desc": "¿Juan no puede regalarle a María? Configura reglas fácilmente para evitar cruces no deseados.",
+    "f3_title": "Sorteo Automático",
+    "f3_desc": "Nuestro algoritmo se encarga de todo. Nadie sabrá quién le toca a quién hasta que reciban el mensaje.",
+    "f4_title": "Notificaciones",
+    "f4_desc": "Envía los resultados mágicamente por Correo Electrónico, WhatsApp o SMS."
+  },
+  "dashboard": {
+    "title": "Bienvenido al Amigo Invisible",
+    "premium": "👑 Usuario Premium",
+    "free_plan": "Plan Gratuito (Máx 15 participantes)",
+    "upgrade": "⭐ Upgrade a Premium",
+    "add_participant": "Agregar Participante",
+    "participants": "Participantes",
+    "people": "personas",
+    "draw_button": "Realizar Sorteo",
+    "drawing": "Realizando sorteo...",
+    "download_log": "Descargar Log",
+    "new_draw": "Nuevo Sorteo",
+    "errors": {
+      "min_participants": "Se necesitan al menos 2 participantes",
+      "draw_success": "¡Sorteo realizado con éxito! Las notificaciones han sido enviadas.",
+      "draw_error": "Error al realizar el sorteo",
+      "payment_init_error": "Error al iniciar el pago",
+      "payment_conn_error": "Error al conectar con MercadoPago",
+      "retry_success": "Notificación reintentada",
+      "retry_error": "Error al reintentar",
+      "retrying": "Reintentando envío..."
+    }
+  },
+  "participant_form": {
+    "name": "Nombre",
+    "email": "Email (Obligatorio para sorteo free)",
+    "phone": "Teléfono (Con código de país, ej: +598)",
+    "add": "Agregar",
+    "error_incomplete": "Por favor completa todos los campos",
+    "success": "Participante agregado correctamente"
+  },
+  "participant_list": {
+    "col_name": "NOMBRE",
+    "col_phone": "TELÉFONO",
+    "col_email": "EMAIL",
+    "col_exclusions": "NO REGALAR A",
+    "col_notifications": "NOTIFICACIONES",
+    "col_actions": "ACCIONES",
+    "select": "Seleccionar...",
+    "pending": "Pendiente...",
+    "retry": "Reintentar",
+    "share_whatsapp": "Compartir WhatsApp",
+    "empty": "No hay participantes aún.",
+    "sent": "Enviado",
+    "failed": "Falló",
+    "whatsapp_message": "¡Hola! Ya hice el sorteo del Amigo Invisible 🎁\n\nEntra a este enlace secreto para ver a quién te toca regalar:\n{url}\n\n¡No le digas a nadie! 🤫"
+  },
+  "reveal": {
+    "hello": "¡Hola,",
+    "subtitle": "Tu organizador ha hecho el sorteo del Amigo Invisible. ¿Estás listo para descubrir a quién te toca regalar?",
+    "reveal_btn": "🎁 Revelar mi amigo",
+    "gift_to": "Te toca regalar a...",
+    "not_found_title": "Sorteo no encontrado",
+    "not_found_desc": "El enlace parece ser inválido o el sorteo fue eliminado.",
+    "invalid_link": "Enlace Inválido",
+    "invalid_desc": "Este enlace mágico es incorrecto o ha caducado.",
+    "server_error": "Error del servidor",
+    "server_error_desc": "Hubo un problema al cargar el sorteo. Inténtalo más tarde.",
+    "donation_prompt": "¿Te gustó usar esta herramienta gratuita?"
+  },
+  "api": {
+    "email_subject": "Tu Amigo Invisible",
+    "email_message": "Hola {giver}! En el sorteo del amigo invisible te ha tocado regalar a: {receiver}"
+  }
+}
