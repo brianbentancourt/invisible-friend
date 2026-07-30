@@ -8,12 +8,51 @@ import Footer from '@/components/Footer';
 import { LanguageProvider } from '@/components/LanguageProvider';
 import { GoogleAdSense } from '@next/third-parties/google';
 
+import en from '@/messages/en.json';
+import es from '@/messages/es.json';
+
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'Amigo Invisible',
-  description: 'Sistema de sorteo para amigo invisible',
-};
+export async function generateMetadata({ params }) {
+  const { lang } = params;
+  const dict = lang === 'en' ? en : es;
+
+  return {
+    title: dict.seo.title,
+    description: dict.seo.description,
+    keywords: dict.seo.keywords,
+    openGraph: {
+      title: dict.seo.title,
+      description: dict.seo.description,
+      type: 'website',
+      url: 'https://tu-dominio.com',
+      siteName: 'Amigo Invisible',
+      images: [
+        {
+          url: 'https://tu-dominio.com/og-image.png', // Añadiremos una imagen genérica después o el usuario
+          width: 1200,
+          height: 630,
+          alt: dict.seo.title,
+        }
+      ],
+      locale: lang === 'en' ? 'en_US' : 'es_ES',
+      alternateLocales: ['es_ES', 'en_US'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: dict.seo.title,
+      description: dict.seo.description,
+      images: ['https://tu-dominio.com/og-image.png'],
+    },
+    alternates: {
+      canonical: `https://tu-dominio.com/${lang}`,
+      languages: {
+        'es': 'https://tu-dominio.com/es',
+        'en': 'https://tu-dominio.com/en',
+      },
+    },
+  };
+}
 
 export default function RootLayout({ children, params }) {
   const locale = params.lang || 'es';

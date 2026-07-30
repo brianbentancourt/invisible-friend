@@ -86,5 +86,10 @@
   "api": {
     "email_subject": "Tu Amigo Invisible",
     "email_message": "Hola {giver}! En el sorteo del amigo invisible te ha tocado regalar a: {receiver}"
+  },
+  "seo": {
+    "title": "Amigo Invisible - Sorteo Online Automático y Gratis",
+    "description": "Organiza tu sorteo de Amigo Invisible online y gratis. Agrega participantes, configura excepciones y notifica por email o WhatsApp automáticamente.",
+    "keywords": ["amigo invisible", "sorteo amigo invisible", "secret santa", "intercambio de regalos", "sorteo online", "navidad"]
   }
 }

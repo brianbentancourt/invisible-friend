@@ -85,6 +85,11 @@
   },
   "api": {
     "email_subject": "Your Secret Santa",
-    "email_message": "Hello {giver}! In the Secret Santa draw, you have to gift: {receiver}"
+    "email_message": "Hello {giver}! In the Secret Santa draw, you got: {receiver}"
+  },
+  "seo": {
+    "title": "Secret Santa - Free Automatic Online Draw",
+    "description": "Organize your Secret Santa draw online for free. Add participants, set exceptions, and automatically notify via email or WhatsApp.",
+    "keywords": ["secret santa", "secret santa generator", "gift exchange", "online draw", "christmas", "amigo invisible"]
   }
 }
