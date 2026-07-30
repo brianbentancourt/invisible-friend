@@ -19,8 +19,6 @@ export default function Navbar() {
         }
     };
 
-    if (!user) return null;
-
     return (
         <NextUINavbar isBordered>
             <NavbarBrand>

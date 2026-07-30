@@ -9,11 +9,14 @@ function getLocale(request) {
         return cookie;
     }
     
-    // Fallback a accept-language (simple)
+    // Fallback a accept-language (simple pero priorizando el que aparece primero)
     const acceptLang = request.headers.get('accept-language');
     if (acceptLang) {
-        if (acceptLang.includes('en')) return 'en';
-        if (acceptLang.includes('es')) return 'es';
+        const esIndex = acceptLang.indexOf('es');
+        const enIndex = acceptLang.indexOf('en');
+        
+        if (esIndex !== -1 && (enIndex === -1 || esIndex < enIndex)) return 'es';
+        if (enIndex !== -1 && (esIndex === -1 || enIndex < esIndex)) return 'en';
     }
     
     return defaultLocale;
