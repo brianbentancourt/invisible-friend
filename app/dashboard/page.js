@@ -1,10 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@nextui-org/react";
 import ParticipantForm from '@/components/ParticipantForm';
 import ParticipantList from '@/components/ParticipantList';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'react-toastify';
+import DonationButton from '@/components/DonationButton';
+import AdBanner from '@/components/AdBanner';
 
 export default function Dashboard() {
     const [participants, setParticipants] = useState([]);
@@ -12,7 +14,46 @@ export default function Dashboard() {
     const [drawLog, setDrawLog] = useState(null);
     const [drawId, setDrawId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isPremium, setIsPremium] = useState(false);
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
     const { user } = useAuth();
+
+    useEffect(() => {
+        if (user?.email) {
+            fetch('/api/user/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userEmail: user.email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.isPremium) setIsPremium(true);
+            })
+            .catch(console.error);
+        }
+    }, [user]);
+
+    const handleUpgrade = async () => {
+        if (!user?.email) return;
+        setIsCheckoutLoading(true);
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userEmail: user.email })
+            });
+            const data = await response.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                toast.error('Error al iniciar el pago');
+            }
+        } catch (error) {
+            toast.error('Error al conectar con MercadoPago');
+        } finally {
+            setIsCheckoutLoading(false);
+        }
+    };
 
     const handleAddParticipant = (participant) => {
         setParticipants([...participants, { ...participant, id: crypto.randomUUID(), exclusions: [] }]);
@@ -37,7 +78,7 @@ export default function Dashboard() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ participants }),
+                body: JSON.stringify({ participants, userEmail: user?.email }),
             });
 
             const data = await response.json();
@@ -107,11 +148,35 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 h-screen flex flex-col">
-            <h1 className="text-2xl font-bold mb-6">
-                Bienvenido al Amigo Invisible
-            </h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold">Bienvenido al Amigo Invisible</h1>
+                    {isPremium ? (
+                        <span className="text-sm font-semibold text-warning">👑 Usuario Premium</span>
+                    ) : (
+                        <span className="text-sm text-default-500">Plan Gratuito (Máx 15 participantes)</span>
+                    )}
+                </div>
+                <div className="flex gap-4 items-center">
+                    {!isPremium && (
+                        <Button 
+                            color="secondary" 
+                            variant="flat" 
+                            className="font-bold"
+                            isLoading={isCheckoutLoading}
+                            onPress={handleUpgrade}
+                        >
+                            ⭐ Upgrade a Premium
+                        </Button>
+                    )}
+                    <DonationButton />
+                </div>
+            </div>
+            
+            <AdBanner />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
                 <div>
                     <h2 className="text-xl font-semibold mb-4">
                         Agregar Participante

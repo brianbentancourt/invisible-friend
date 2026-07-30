@@ -1,5 +1,7 @@
 import { adminDb } from '@/config/firebase-admin';
 import RevealCard from '@/components/RevealCard';
+import DonationButton from '@/components/DonationButton';
+import AdBanner from '@/components/AdBanner';
 
 export default async function SorteoRevealPage({ params }) {
   const { drawId, secretToken } = params;
@@ -38,8 +40,17 @@ export default async function SorteoRevealPage({ params }) {
     const { giver, receiver } = assignment;
 
     return (
-      <div className="min-h-screen bg-background pt-20 px-4">
-        <RevealCard giverName={giver.name} receiverName={receiver.name} />
+      <div className="min-h-screen bg-background pt-10 px-4 flex flex-col items-center">
+        <AdBanner />
+        
+        <div className="flex-1 w-full flex items-center justify-center">
+          <RevealCard giverName={giver.name} receiverName={receiver.name} />
+        </div>
+
+        <div className="mb-10 text-center">
+          <p className="text-default-500 mb-4 text-sm">¿Te gustó usar esta herramienta gratuita?</p>
+          <DonationButton />
+        </div>
       </div>
     );
 

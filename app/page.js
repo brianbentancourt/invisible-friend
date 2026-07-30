@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { Button, Card, CardBody } from '@nextui-org/react';
 import { motion } from 'framer-motion';
+import AdBanner from '@/components/AdBanner';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -122,6 +123,11 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        {/* Ad Banner Section */}
+        <div className="mt-20">
+          <AdBanner />
+        </div>
       </main>
     </div>
   );

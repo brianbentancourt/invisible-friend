@@ -177,12 +177,30 @@ async function sendSMS(to, message) {
 
 export async function POST(request) {
     try {
-        const { participants } = await request.json();
+        const { participants, userEmail } = await request.json();
 
         if (!Array.isArray(participants) || participants.length < 2) {
             return NextResponse.json(
                 { error: 'Se necesitan al menos 2 participantes' },
                 { status: 400 }
+            );
+        }
+
+        // Verificar estado Premium
+        let isPremium = false;
+        if (userEmail === 'brianbentancourt9@gmail.com') {
+            isPremium = true;
+        } else if (userEmail) {
+            const userDoc = await adminDb.collection('users').doc(userEmail).get();
+            if (userDoc.exists && userDoc.data().isPremium) {
+                isPremium = true;
+            }
+        }
+
+        if (!isPremium && participants.length > 15) {
+            return NextResponse.json(
+                { error: 'El plan gratuito permite hasta 15 participantes. Actualiza a Premium para añadir más.' },
+                { status: 403 }
             );
         }
 
@@ -210,7 +228,7 @@ export async function POST(request) {
             const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
                 sendEmail(giver.email, 'Tu Amigo Invisible', message),
                 sendWhatsApp(giver.phone, message),
-                sendSMS(giver.phone, message)
+                isPremium ? sendSMS(giver.phone, message) : Promise.resolve(false)
             ]);
 
             return {
