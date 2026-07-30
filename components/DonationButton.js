@@ -6,7 +6,7 @@ export default function DonationButton() {
   return (
     <Button
       as="a"
-      href="https://buymeacoffee.com/brianbent"
+      href="https://www.paypal.com/donate/?hosted_button_id=LRFX7GE2YG3JU"
       target="_blank"
       rel="noopener noreferrer"
       color="warning"
