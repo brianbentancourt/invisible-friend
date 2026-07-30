@@ -12,8 +12,12 @@ export default function ParticipantForm({ onAddParticipant }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!name || !phone) {
-            toast.error(t('participant_form.error_incomplete'));
+        if (!name) {
+            toast.error(t('participant_form.error_no_name') || 'El nombre es obligatorio');
+            return;
+        }
+        if (!email && !phone) {
+            toast.error(t('participant_form.error_no_contact') || 'Debes proveer al menos un Email o Teléfono');
             return;
         }
         onAddParticipant({ name, email, phone });
@@ -42,7 +46,6 @@ export default function ParticipantForm({ onAddParticipant }) {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                required
             />
             <Button type="submit" color="primary">
                 {t('participant_form.add')}

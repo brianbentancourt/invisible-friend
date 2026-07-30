@@ -51,7 +51,9 @@
     "email": "Email (Required for free draw)",
     "phone": "Phone (With country code, e.g., +1)",
     "add": "Add",
-    "error_incomplete": "Please complete all fields",
+    "error_incomplete": "Please fill all fields",
+    "error_no_name": "Name is required",
+    "error_no_contact": "You must provide at least an Email or Phone",
     "success": "Participant added successfully"
   },
   "participant_list": {

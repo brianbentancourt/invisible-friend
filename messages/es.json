@@ -52,6 +52,8 @@
     "phone": "Teléfono (Con código de país, ej: +598)",
     "add": "Agregar",
     "error_incomplete": "Por favor completa todos los campos",
+    "error_no_name": "El nombre es obligatorio",
+    "error_no_contact": "Debes proveer al menos un Email o Teléfono",
     "success": "Participante agregado correctamente"
   },
   "participant_list": {
