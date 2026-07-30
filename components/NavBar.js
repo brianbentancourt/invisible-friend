@@ -22,7 +22,12 @@ export default function Navbar() {
     return (
         <NextUINavbar isBordered>
             <NavbarBrand>
-                <h1 className="text-lg font-bold">Secret Santa</h1>
+                <div className="flex items-center gap-2">
+                    <span className="text-2xl">🎁</span>
+                    <h1 className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                        GiftLoop
+                    </h1>
+                </div>
             </NavbarBrand>
             <NavbarContent justify="end">
                 <NavbarItem>
