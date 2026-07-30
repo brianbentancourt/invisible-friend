@@ -20,7 +20,7 @@ export async function GET(request) {
         return NextResponse.json({ participants: [] });
     } catch (error) {
         console.error('Error fetching participants:', error);
-        return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+        return NextResponse.json({ error: 'Error interno', details: error.message }, { status: 500 });
     }
 }
 
@@ -40,6 +40,6 @@ export async function POST(request) {
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error saving participants:', error);
-        return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+        return NextResponse.json({ error: 'Error interno', details: error.message }, { status: 500 });
     }
 }
