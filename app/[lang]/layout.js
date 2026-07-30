@@ -25,11 +25,11 @@ export async function generateMetadata({ params }) {
       title: dict.seo.title,
       description: dict.seo.description,
       type: 'website',
-      url: 'https://tu-dominio.com',
+      url: 'https://amigoinvisible.brianbentancourt.com',
       siteName: 'Amigo Invisible',
       images: [
         {
-          url: 'https://tu-dominio.com/og-image.png', // Añadiremos una imagen genérica después o el usuario
+          url: 'https://amigoinvisible.brianbentancourt.com/og-image.png', // Añadiremos una imagen genérica después o el usuario
           width: 1200,
           height: 630,
           alt: dict.seo.title,
@@ -42,13 +42,13 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title: dict.seo.title,
       description: dict.seo.description,
-      images: ['https://tu-dominio.com/og-image.png'],
+      images: ['https://amigoinvisible.brianbentancourt.com/og-image.png'],
     },
     alternates: {
-      canonical: `https://tu-dominio.com/${lang}`,
+      canonical: `https://amigoinvisible.brianbentancourt.com/${lang}`,
       languages: {
-        'es': 'https://tu-dominio.com/es',
-        'en': 'https://tu-dominio.com/en',
+        'es': 'https://amigoinvisible.brianbentancourt.com/es',
+        'en': 'https://amigoinvisible.brianbentancourt.com/en',
       },
     },
     ...(process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && {

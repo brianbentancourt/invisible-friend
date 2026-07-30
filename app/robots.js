@@ -5,6 +5,6 @@ export default function robots() {
       allow: '/',
       disallow: ['/es/dashboard/', '/en/dashboard/', '/es/sorteo/', '/en/sorteo/'],
     },
-    sitemap: 'https://tu-dominio.com/sitemap.xml',
+    sitemap: 'https://amigoinvisible.brianbentancourt.com/sitemap.xml',
   }
 }

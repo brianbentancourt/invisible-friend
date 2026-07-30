@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = 'https://tu-dominio.com';
+  const baseUrl = 'https://amigoinvisible.brianbentancourt.com';
 
   return [
     {
