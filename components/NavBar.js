@@ -25,7 +25,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-2">
                     <span className="text-2xl">🎁</span>
                     <h1 className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                        GiftLoop
+                        Amigo Invisible
                     </h1>
                 </div>
             </NavbarBrand>
@@ -33,9 +33,9 @@ export default function Navbar() {
                 <NavbarItem>
                     <Dropdown placement="bottom-end">
                         <DropdownTrigger>
-                            <Button 
-                                variant="flat" 
-                                size="sm" 
+                            <Button
+                                variant="flat"
+                                size="sm"
                                 radius="full"
                                 className="font-semibold bg-default-100 hover:bg-default-200"
                                 startContent={
@@ -49,8 +49,8 @@ export default function Navbar() {
                                 {locale === 'en' ? 'EN' : 'ES'}
                             </Button>
                         </DropdownTrigger>
-                        <DropdownMenu 
-                            aria-label="Cambiar idioma" 
+                        <DropdownMenu
+                            aria-label="Cambiar idioma"
                             onAction={(key) => changeLanguage(key)}
                             selectedKeys={new Set([locale])}
                             selectionMode="single"
