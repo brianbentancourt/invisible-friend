@@ -51,6 +51,11 @@ export async function generateMetadata({ params }) {
         'en': 'https://tu-dominio.com/en',
       },
     },
+    ...(process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && {
+      other: {
+        'google-adsense-account': process.env.NEXT_PUBLIC_ADSENSE_PUB_ID,
+      }
+    })
   };
 }
 
