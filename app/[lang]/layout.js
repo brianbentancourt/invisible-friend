@@ -6,6 +6,7 @@ import '@/app/globals.css';
 import Navbar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { LanguageProvider } from '@/components/LanguageProvider';
+import { GoogleAdSense } from '@next/third-parties/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,6 +30,9 @@ export default function RootLayout({ children, params }) {
           </LanguageProvider>
         </Providers>
       </body>
+      {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
+        <GoogleAdSense publisherId={process.env.NEXT_PUBLIC_ADSENSE_PUB_ID} />
+      )}
     </html>
   );
 }

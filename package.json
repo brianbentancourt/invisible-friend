@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.12",
     "@nextui-org/react": "^2.6.8",
     "@sendgrid/mail": "^8.1.4",
     "autoprefixer": "^10.4.20",
