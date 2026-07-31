@@ -12,7 +12,7 @@ Producción: https://amigoinvisible.brianbentancourt.com
 - Next.js 15 (App Router) + NextUI + Tailwind
 - Firebase Auth + Firestore
 - SendGrid (email) y Twilio (WhatsApp / SMS)
-- MercadoPago (planes de pago)
+- MercadoPago y PayPal (planes de pago)
 
 ## Puesta en marcha
 
@@ -37,6 +37,9 @@ npm run dev
 | `TWILIO_*` | No | WhatsApp y SMS. Si faltan, esos canales se saltan sin romper el sorteo. |
 | `MP_ACCESS_TOKEN` | Para cobrar | Token de MercadoPago. |
 | `MP_WEBHOOK_SECRET` | Recomendada | Clave del webhook de MercadoPago. Sin ella no se valida la firma de las notificaciones. |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` | Para cobrar fuera de LatAm | Credenciales de PayPal. Sin el client id el selector de medio de pago no aparece y todo va por MercadoPago. |
+| `PAYPAL_ENV` | No | `sandbox` (por defecto) o `live`. Sólo `live` cobra de verdad. |
+| `PAYPAL_WEBHOOK_ID` | Recomendada | ID del webhook de PayPal. Sin él se rechazan las notificaciones (el retorno del navegador igual activa el plan). |
 | `ADMIN_EMAILS` | No | Emails con acceso completo, separados por coma. |
 | `NEXT_PUBLIC_GA_ID` | No | Medición de GA4. Sin ella no se envía ningún evento. |
 | `NEXT_PUBLIC_ADSENSE_PUB_ID` / `NEXT_PUBLIC_ADSENSE_SLOT_ID` | No | Publicidad. Con sólo el PUB_ID se usan anuncios automáticos. |
@@ -75,11 +78,32 @@ los `hreflang`. El sitemap se actualiza solo.
 ## Modelo de negocio
 
 - **Gratis**: hasta 15 participantes, con publicidad.
-- **Premium** y **Empresas**: pago único vía MercadoPago; el webhook marca al
-  usuario en Firestore.
+- **Premium** y **Empresas**: pago único vía MercadoPago (UYU) o PayPal (USD);
+  el webhook marca al usuario en Firestore.
 - **Afiliados**: la página de revelación muestra ideas de regalo con enlaces de
   afiliado. Es la página de mayor tráfico del sitio (una visita por participante).
 - **Donaciones**: Buy Me a Coffee y PayPal.
+
+### Medios de pago
+
+Hay dos pasarelas y el usuario elige en el selector de la página de precios y
+del dashboard:
+
+| Pasarela | Moneda | Para quién |
+| --- | --- | --- |
+| MercadoPago | UYU | LatAm (tarjetas locales, transferencia, saldo en cuenta) |
+| PayPal | USD | Resto del mundo (200+ países, tarjeta internacional con o sin cuenta PayPal) |
+
+El selector arranca en PayPal si la zona horaria del navegador está fuera de los
+países donde MercadoPago es habitual (`lib/payments.js`), pero siempre se puede
+cambiar a mano. Si `NEXT_PUBLIC_PAYPAL_CLIENT_ID` no está configurada, el
+selector no se muestra y todo el flujo va por MercadoPago como antes.
+
+Flujo de PayPal: `/api/checkout` crea la orden → el usuario paga → vuelve a
+`/api/payments/paypal/capture`, que captura el cobro y activa el plan al
+instante → `/api/webhooks/paypal` (evento `PAYMENT.CAPTURE.COMPLETED`) hace lo
+mismo por si el usuario cerró el navegador antes de volver. Ambos caminos usan
+`activatePaidPlan` (`lib/plans.js`), que es idempotente.
 
 ### Afiliados
 

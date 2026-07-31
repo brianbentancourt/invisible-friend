@@ -9,8 +9,10 @@ import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'react-toastify';
 import DonationButton from '@/components/DonationButton';
 import AdBanner from '@/components/AdBanner';
+import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import { useLanguage } from '@/components/LanguageProvider';
-import { FREE_PARTICIPANT_LIMIT } from '@/config/site';
+import { FREE_PARTICIPANT_LIMIT, DEFAULT_PAYMENT_PROVIDER } from '@/config/site';
+import { suggestedProvider } from '@/lib/payments';
 import { getNavLinks } from '@/lib/content';
 import { track, EVENTS } from '@/lib/analytics';
 
@@ -38,6 +40,7 @@ function Dashboard() {
     const [isPremium, setIsPremium] = useState(false);
     const [plan, setPlan] = useState('free');
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [paymentProvider, setPaymentProvider] = useState(DEFAULT_PAYMENT_PROVIDER);
     const { user, loading: authLoading } = useAuth();
     const { t, locale } = useLanguage();
     const router = useRouter();
@@ -61,6 +64,12 @@ function Dashboard() {
         messages[payment]?.();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
+
+    // La sugerencia depende de la zona horaria del navegador: se resuelve
+    // después del montaje para no romper la hidratación.
+    useEffect(() => {
+        setPaymentProvider(suggestedProvider());
+    }, []);
 
     useEffect(() => {
         // La lista local es la fuente de arranque en ambos casos: así el modo
@@ -143,7 +152,11 @@ function Dashboard() {
     };
 
     const handleUpgrade = async (selectedPlan = 'premium') => {
-        track(EVENTS.UPGRADE_CLICK, { plan: selectedPlan, source: 'dashboard' });
+        track(EVENTS.UPGRADE_CLICK, {
+            plan: selectedPlan,
+            source: 'dashboard',
+            provider: paymentProvider,
+        });
 
         if (!user?.email) {
             router.push(`/${locale}/auth/signin`);
@@ -155,11 +168,16 @@ function Dashboard() {
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userEmail: user.email, plan: selectedPlan, lang: locale }),
+                body: JSON.stringify({
+                    userEmail: user.email,
+                    plan: selectedPlan,
+                    lang: locale,
+                    provider: paymentProvider,
+                }),
             });
             const data = await response.json();
             if (data.url) {
-                track(EVENTS.CHECKOUT_STARTED, { plan: selectedPlan });
+                track(EVENTS.CHECKOUT_STARTED, { plan: selectedPlan, provider: paymentProvider });
                 window.location.href = data.url;
             } else {
                 toast.error(t('dashboard.errors.payment_init_error'));
@@ -313,15 +331,22 @@ function Dashboard() {
                 </div>
                 <div className="flex gap-3 items-center flex-wrap">
                     {!isPremium && (
-                        <Button
-                            color="secondary"
-                            variant="flat"
-                            className="font-bold"
-                            isLoading={isCheckoutLoading}
-                            onPress={() => handleUpgrade('premium')}
-                        >
-                            {t('dashboard.upgrade')}
-                        </Button>
+                        <>
+                            <PaymentMethodSelector
+                                value={paymentProvider}
+                                onChange={setPaymentProvider}
+                                compact
+                            />
+                            <Button
+                                color="secondary"
+                                variant="flat"
+                                className="font-bold"
+                                isLoading={isCheckoutLoading}
+                                onPress={() => handleUpgrade('premium')}
+                            >
+                                {t('dashboard.upgrade')}
+                            </Button>
+                        </>
                     )}
                     <DonationButton />
                 </div>

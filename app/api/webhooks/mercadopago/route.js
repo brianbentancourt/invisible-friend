@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
-import { adminDb } from '@/config/firebase-admin';
-import { PAID_PLANS } from '@/config/site';
+import { activatePaidPlan } from '@/lib/plans';
 
 const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || '' });
 
@@ -74,25 +73,12 @@ export async function POST(request) {
             const paymentInfo = await payment.get({ id: paymentId });
 
             if (paymentInfo.status === 'approved') {
-                const userEmail = paymentInfo.metadata?.user_email;
-                const rawPlan = paymentInfo.metadata?.plan || 'premium';
-                const plan = PAID_PLANS.includes(rawPlan) ? rawPlan : 'premium';
-
-                if (userEmail) {
-                    // Actualizar el estado del usuario en Firestore
-                    const userRef = adminDb.collection('users').doc(userEmail);
-                    await userRef.set(
-                        {
-                            isPremium: true,
-                            plan,
-                            premiumSince: new Date().toISOString(),
-                            paymentId,
-                        },
-                        { merge: true }
-                    );
-
-                    console.log(`Usuario ${userEmail} actualizado a plan ${plan}.`);
-                }
+                await activatePaidPlan({
+                    userEmail: paymentInfo.metadata?.user_email,
+                    plan: paymentInfo.metadata?.plan || 'premium',
+                    paymentId,
+                    provider: 'mercadopago',
+                });
             }
         }
 
