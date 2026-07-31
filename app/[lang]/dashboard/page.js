@@ -1,6 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Button } from "@nextui-org/react";
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import NextLink from 'next/link';
+import { Button, Card, CardBody, Input, Textarea, Chip } from '@nextui-org/react';
 import ParticipantForm from '@/components/ParticipantForm';
 import ParticipantList from '@/components/ParticipantList';
 import { useAuth } from '@/components/AuthProvider';
@@ -8,122 +10,180 @@ import { toast } from 'react-toastify';
 import DonationButton from '@/components/DonationButton';
 import AdBanner from '@/components/AdBanner';
 import { useLanguage } from '@/components/LanguageProvider';
+import { FREE_PARTICIPANT_LIMIT } from '@/config/site';
+import { getNavLinks } from '@/lib/content';
+import { track, EVENTS } from '@/lib/analytics';
 
-export default function Dashboard() {
+const STORAGE_KEY = 'invisible_draft_participants';
+const EVENT_STORAGE_KEY = 'invisible_draft_event';
+const EMPTY_EVENT = { name: '', date: '', budget: '', message: '' };
+
+// useSearchParams necesita una frontera de Suspense para que Next pueda
+// prerenderizar la ruta sin marcarla entera como dinámica.
+export default function DashboardPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen" />}>
+            <Dashboard />
+        </Suspense>
+    );
+}
+
+function Dashboard() {
     const [participants, setParticipants] = useState([]);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [event, setEvent] = useState(EMPTY_EVENT);
     const [drawResults, setDrawResults] = useState(null);
     const [drawLog, setDrawLog] = useState(null);
     const [drawId, setDrawId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
+    const [plan, setPlan] = useState('free');
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const { t, locale } = useLanguage();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const links = getNavLinks(locale);
+
+    const isGuest = !authLoading && !user;
+    const limitReached = !isPremium && participants.length >= FREE_PARTICIPANT_LIMIT;
+
+    // Avisar del resultado del pago cuando MercadoPago devuelve al usuario.
+    useEffect(() => {
+        const payment = searchParams.get('payment');
+        if (!payment) return;
+
+        const messages = {
+            success: () => toast.success(t('dashboard.errors.payment_success')),
+            pending: () => toast.info(t('dashboard.errors.payment_pending')),
+            failure: () => toast.error(t('dashboard.errors.payment_failure')),
+        };
+
+        messages[payment]?.();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     useEffect(() => {
-        if (user?.email) {
-            // Verificar estado premium
-            fetch('/api/user/status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userEmail: user.email })
-            })
-            .then(res => res.json())
-            .then(data => {
+        // La lista local es la fuente de arranque en ambos casos: así el modo
+        // invitado funciona y quien inicia sesión no pierde lo que ya cargó.
+        const localData = localStorage.getItem(STORAGE_KEY);
+        if (localData) {
+            try {
+                setParticipants(JSON.parse(localData));
+            } catch (e) {
+                console.error('Error parsing local participants');
+            }
+        }
+
+        const localEvent = localStorage.getItem(EVENT_STORAGE_KEY);
+        if (localEvent) {
+            try {
+                setEvent({ ...EMPTY_EVENT, ...JSON.parse(localEvent) });
+            } catch (e) {
+                console.error('Error parsing local event');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!user?.email) return;
+
+        fetch('/api/user/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userEmail: user.email }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
                 if (data.isPremium) setIsPremium(true);
+                if (data.plan) setPlan(data.plan);
             })
             .catch(console.error);
 
-            // Cargar participantes guardados desde Firestore
-            fetch(`/api/user/participants?email=${encodeURIComponent(user.email)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.participants && data.participants.length > 0) {
-                    setParticipants(data.participants);
-                } else {
-                    // Si no tiene en la nube, revisamos si dejó algo en localStorage localmente
-                    const localData = localStorage.getItem('invisible_draft_participants');
-                    if (localData) setParticipants(JSON.parse(localData));
+        fetch(`/api/user/participants?email=${encodeURIComponent(user.email)}`)
+            .then((res) => res.json())
+            .then((data) => {
+                // Sólo pisamos la lista local si la nube tiene datos: si el
+                // usuario acaba de cargar gente como invitado, se conserva.
+                if (data.participants?.length > 0) {
+                    const localData = localStorage.getItem(STORAGE_KEY);
+                    const local = localData ? JSON.parse(localData) : [];
+                    if (local.length === 0) setParticipants(data.participants);
                 }
-                setIsInitialLoad(false);
             })
-            .catch(err => {
-                console.error(err);
-                setIsInitialLoad(false);
-            });
-        } else if (user === null) {
-            // Usuario no logueado (Guest mode)
-            const localData = localStorage.getItem('invisible_draft_participants');
-            if (localData) {
-                try {
-                    setParticipants(JSON.parse(localData));
-                } catch (e) {
-                    console.error("Error parsing local participants");
-                }
-            }
-            setIsInitialLoad(false);
-        }
+            .catch(console.error);
     }, [user]);
 
-    // Función para guardar participantes (debounce opcional)
-    const saveParticipants = async (newParticipants) => {
-        setParticipants(newParticipants);
+    const saveParticipants = useCallback(
+        async (newParticipants) => {
+            setParticipants(newParticipants);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newParticipants));
 
-        // Siempre guardar en localStorage como backup
-        localStorage.setItem('invisible_draft_participants', JSON.stringify(newParticipants));
-
-        // Si hay usuario, sincronizar con Firestore
-        if (user?.email) {
-            try {
-                await fetch('/api/user/participants', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userEmail: user.email,
-                        participants: newParticipants
-                    })
-                });
-            } catch (error) {
-                console.error('Error al sincronizar participantes:', error);
+            if (user?.email) {
+                try {
+                    await fetch('/api/user/participants', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userEmail: user.email,
+                            participants: newParticipants,
+                        }),
+                    });
+                } catch (error) {
+                    console.error('Error al sincronizar participantes:', error);
+                }
             }
-        }
+        },
+        [user]
+    );
+
+    const updateEvent = (field, value) => {
+        const next = { ...event, [field]: value };
+        setEvent(next);
+        localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(next));
     };
 
-    const handleUpgrade = async () => {
-        if (!user?.email) return;
+    const handleUpgrade = async (selectedPlan = 'premium') => {
+        track(EVENTS.UPGRADE_CLICK, { plan: selectedPlan, source: 'dashboard' });
+
+        if (!user?.email) {
+            router.push(`/${locale}/auth/signin`);
+            return;
+        }
+
         setIsCheckoutLoading(true);
         try {
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userEmail: user.email })
+                body: JSON.stringify({ userEmail: user.email, plan: selectedPlan, lang: locale }),
             });
             const data = await response.json();
             if (data.url) {
+                track(EVENTS.CHECKOUT_STARTED, { plan: selectedPlan });
                 window.location.href = data.url;
             } else {
-                toast.error('Error al iniciar el pago');
+                toast.error(t('dashboard.errors.payment_init_error'));
             }
         } catch (error) {
-            toast.error('Error al conectar con MercadoPago');
+            toast.error(t('dashboard.errors.payment_conn_error'));
         } finally {
             setIsCheckoutLoading(false);
         }
     };
 
     const handleAddParticipant = (participant) => {
-        saveParticipants([...participants, { ...participant, id: crypto.randomUUID(), exclusions: [] }]);
+        saveParticipants([
+            ...participants,
+            { ...participant, id: crypto.randomUUID(), exclusions: [] },
+        ]);
     };
 
     const handleUpdateParticipant = (id, updates) => {
-        saveParticipants(participants.map(p => 
-            p.id === id ? { ...p, ...updates } : p
-        ));
+        saveParticipants(participants.map((p) => (p.id === id ? { ...p, ...updates } : p)));
     };
 
     const handleRemoveParticipant = (id) => {
-        saveParticipants(participants.filter(p => p.id !== id));
+        saveParticipants(participants.filter((p) => p.id !== id));
     };
 
     const handleDraw = async () => {
@@ -132,14 +192,21 @@ export default function Dashboard() {
             return;
         }
 
+        // El login se pide acá y no antes: el usuario ya invirtió tiempo
+        // cargando su lista, así que la fricción se paga sola.
+        if (!user?.email) {
+            toast.info(t('dashboard.login_required'));
+            track(EVENTS.SIGNUP_START, { source: 'draw_gate' });
+            router.push(`/${locale}/auth/signin`);
+            return;
+        }
+
         setIsLoading(true);
         try {
             const response = await fetch('/api/draw', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ participants, userEmail: user?.email, lang: locale }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participants, userEmail: user.email, lang: locale, event }),
             });
 
             const data = await response.json();
@@ -148,6 +215,7 @@ export default function Dashboard() {
                 setDrawLog(data.logContent);
                 setDrawId(data.drawId);
                 setDrawResults(data.results);
+                track(EVENTS.DRAW_COMPLETED, { participants: participants.length, plan });
                 toast.success(t('dashboard.errors.draw_success'));
             } else {
                 toast.error(data.error || t('dashboard.errors.draw_error'));
@@ -162,7 +230,7 @@ export default function Dashboard() {
     const handleRetry = async (participantEmail) => {
         if (!drawId) return;
 
-        const toastId = toast.loading("Reintentando envío...");
+        const toastId = toast.loading(t('dashboard.errors.retrying'));
         try {
             const response = await fetch('/api/draw/retry', {
                 method: 'POST',
@@ -173,57 +241,84 @@ export default function Dashboard() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Error al reintentar');
+                throw new Error(data.error || 'Error');
             }
 
-            // Actualizar el estado local con los nuevos resultados
-            setDrawResults(prevResults => prevResults.map(r => {
-                if (r.participant.email === participantEmail) {
-                    return { ...r, status: data.status };
-                }
-                return r;
-            }));
+            setDrawResults((prevResults) =>
+                prevResults.map((r) =>
+                    r.participant.email === participantEmail ? { ...r, status: data.status } : r
+                )
+            );
 
-            toast.update(toastId, { render: "Notificación reintentada", type: "success", isLoading: false, autoClose: 3000 });
-
+            toast.update(toastId, {
+                render: t('dashboard.errors.retry_success'),
+                type: 'success',
+                isLoading: false,
+                autoClose: 3000,
+            });
         } catch (error) {
             console.error(error);
-            toast.update(toastId, { render: "Error al reintentar", type: "error", isLoading: false, autoClose: 3000 });
+            toast.update(toastId, {
+                render: t('dashboard.errors.retry_error'),
+                type: 'error',
+                isLoading: false,
+                autoClose: 3000,
+            });
         }
     };
 
-    const handleDownloadLog = () => {
-        if (!drawLog) return;
-        const blob = new Blob([drawLog], { type: 'text/plain' });
+    const downloadFile = (content, extension, mime) => {
+        const blob = new Blob([content], { type: mime });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `sorteo-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
+        a.download = `sorteo-${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
+    const handleDownloadLog = () => {
+        if (drawLog) downloadFile(drawLog, 'log', 'text/plain');
+    };
+
+    const handleExportCsv = () => {
+        const header = 'nombre,email,telefono,deseos\n';
+        const rows = participants
+            .map((p) =>
+                [p.name, p.email || '', p.phone || '', (p.wishlist || '').replace(/\n/g, ' ')]
+                    .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+                    .join(',')
+            )
+            .join('\n');
+
+        downloadFile(header + rows, 'csv', 'text/csv;charset=utf-8');
+    };
+
+    const planLabel = isPremium
+        ? plan === 'business'
+            ? t('dashboard.business')
+            : t('dashboard.premium')
+        : t('dashboard.free_plan');
+
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
-                    {isPremium ? (
-                        <span className="text-sm font-semibold text-warning">{t('dashboard.premium')}</span>
-                    ) : (
-                        <span className="text-sm text-default-500">{t('dashboard.free_plan')}</span>
-                    )}
+                    <span className={`text-sm ${isPremium ? 'font-semibold text-warning' : 'text-default-500'}`}>
+                        {planLabel}
+                    </span>
                 </div>
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-3 items-center flex-wrap">
                     {!isPremium && (
-                        <Button 
-                            color="secondary" 
-                            variant="flat" 
+                        <Button
+                            color="secondary"
+                            variant="flat"
                             className="font-bold"
                             isLoading={isCheckoutLoading}
-                            onPress={handleUpgrade}
+                            onPress={() => handleUpgrade('premium')}
                         >
                             {t('dashboard.upgrade')}
                         </Button>
@@ -231,15 +326,100 @@ export default function Dashboard() {
                     <DonationButton />
                 </div>
             </div>
-            
-            <AdBanner />
+
+            {/* Modo invitado: se puede cargar todo sin cuenta y el login se pide al sortear */}
+            {isGuest && (
+                <Card className="mb-6 border border-primary/30 bg-primary/5">
+                    <CardBody className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                        <div>
+                            <h2 className="font-bold mb-1">{t('dashboard.guest_title')}</h2>
+                            <p className="text-sm text-default-500">{t('dashboard.guest_desc')}</p>
+                        </div>
+                        <Button
+                            as={NextLink}
+                            href={`/${locale}/auth/signin`}
+                            color="primary"
+                            variant="flat"
+                            className="shrink-0 font-semibold"
+                            onPress={() => track(EVENTS.SIGNUP_START, { source: 'guest_banner' })}
+                        >
+                            {t('dashboard.guest_login')}
+                        </Button>
+                    </CardBody>
+                </Card>
+            )}
+
+            {limitReached && (
+                <Card className="mb-6 border border-warning/40 bg-warning/5">
+                    <CardBody className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                        <p className="text-sm">
+                            {t('dashboard.limit_reached', { limit: FREE_PARTICIPANT_LIMIT })}
+                        </p>
+                        <Button
+                            color="warning"
+                            variant="flat"
+                            className="shrink-0 font-semibold"
+                            isLoading={isCheckoutLoading}
+                            onPress={() => handleUpgrade('premium')}
+                        >
+                            {t('dashboard.limit_cta')}
+                        </Button>
+                    </CardBody>
+                </Card>
+            )}
+
+            {!isPremium && <AdBanner />}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
-                {/* Panel Izquierdo: Formulario */}
-                <div className="lg:col-span-1">
+                {/* Panel Izquierdo: Formulario y detalles del evento */}
+                <div className="lg:col-span-1 flex flex-col gap-6">
                     <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100">
                         <h2 className="text-xl font-bold mb-4">{t('dashboard.add_participant')}</h2>
-                        <ParticipantForm onAddParticipant={handleAddParticipant} />
+                        <ParticipantForm onAddParticipant={handleAddParticipant} isDisabled={limitReached} />
+                    </div>
+
+                    <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100">
+                        <h2 className="text-xl font-bold mb-4">{t('dashboard.event_title')}</h2>
+                        <div className="flex flex-col gap-4">
+                            <Input
+                                label={t('dashboard.event_name')}
+                                placeholder={t('dashboard.event_name_ph')}
+                                value={event.name}
+                                onChange={(e) => updateEvent('name', e.target.value)}
+                            />
+                            <Input
+                                label={t('dashboard.event_date')}
+                                type="date"
+                                value={event.date}
+                                onChange={(e) => updateEvent('date', e.target.value)}
+                            />
+                            <Input
+                                label={t('dashboard.event_budget')}
+                                placeholder={t('dashboard.event_budget_ph')}
+                                value={event.budget}
+                                onChange={(e) => updateEvent('budget', e.target.value)}
+                            />
+                            <div>
+                                <Textarea
+                                    label={t('dashboard.event_message')}
+                                    placeholder={t('dashboard.event_message_ph')}
+                                    value={event.message}
+                                    onChange={(e) => updateEvent('message', e.target.value)}
+                                    minRows={2}
+                                    isDisabled={!isPremium}
+                                />
+                                {!isPremium && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <Chip size="sm" color="secondary" variant="flat">
+                                            Premium
+                                        </Chip>
+                                        <span className="text-xs text-default-400">
+                                            {t('dashboard.event_premium_hint')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -249,51 +429,72 @@ export default function Dashboard() {
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">{t('dashboard.participants')}</h2>
                             <span className="text-sm text-default-500 bg-default-100 px-3 py-1 rounded-full">
-                                {participants.length} {t('dashboard.people')}
+                                {participants.length}
+                                {!isPremium && ` / ${FREE_PARTICIPANT_LIMIT}`} {t('dashboard.people')}
                             </span>
                         </div>
-                        <ParticipantList 
-                            participants={participants} 
+
+                        <ParticipantList
+                            participants={participants}
                             drawResults={drawResults}
                             drawId={drawId}
                             onRetry={handleRetry}
                             onUpdateParticipant={handleUpdateParticipant}
                             onRemoveParticipant={handleRemoveParticipant}
                         />
+
                         {participants.length >= 2 && !drawResults && (
-                            <Button 
-                                color="primary" 
+                            <Button
+                                color="primary"
                                 size="lg"
                                 className="w-full sm:w-auto font-bold mt-4"
                                 onPress={handleDraw}
                                 isLoading={isLoading}
-                                isDisabled={participants.length < 2}
                             >
                                 {isLoading ? t('dashboard.drawing') : `🎲 ${t('dashboard.draw_button')}`}
                             </Button>
                         )}
+
                         {drawResults && (
-                            <div className="flex gap-4 mt-4">
-                                <Button
-                                    color="primary"
-                                    onClick={handleDownloadLog}
-                                >
-                                    Descargar Log
-                                </Button>
-                                <Button
-                                    color="warning"
-                                    onClick={() => {
-                                        setDrawResults(null);
-                                        setDrawId(null);
-                                        setDrawLog(null);
-                                        // No borramos los participantes para permitir reutilizarlos
-                                    }}
-                                >
-                                    Nuevo Sorteo
-                                </Button>
+                            <div className="mt-6">
+                                <h3 className="font-bold mb-1">{t('dashboard.results_title')}</h3>
+                                <p className="text-sm text-default-500 mb-4">{t('dashboard.results_desc')}</p>
+                                <div className="flex gap-3 flex-wrap">
+                                    <Button color="primary" variant="flat" onPress={handleDownloadLog}>
+                                        {t('dashboard.download_log')}
+                                    </Button>
+                                    {isPremium && (
+                                        <Button variant="flat" onPress={handleExportCsv}>
+                                            {t('dashboard.export_csv')}
+                                        </Button>
+                                    )}
+                                    <Button
+                                        color="warning"
+                                        variant="flat"
+                                        onPress={() => {
+                                            setDrawResults(null);
+                                            setDrawId(null);
+                                            setDrawLog(null);
+                                            // Conservamos los participantes para reutilizarlos
+                                        }}
+                                    >
+                                        {t('dashboard.new_draw')}
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </div>
+
+                    {!isPremium && links.pricing && (
+                        <p className="text-center text-sm text-default-400 mt-6">
+                            <NextLink
+                                href={`/${locale}/${links.pricing.slug}`}
+                                className="hover:text-primary transition-colors"
+                            >
+                                {t('nav.pricing')} →
+                            </NextLink>
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,13 +1,23 @@
+import { headers } from 'next/headers';
 import { adminDb } from '@/config/firebase-admin';
 import RevealCard from '@/components/RevealCard';
 import DonationButton from '@/components/DonationButton';
-import AdBanner from '@/components/AdBanner';
-import en from '@/messages/en.json';
-import es from '@/messages/es.json';
+import { getDictionary } from '@/lib/i18n';
+import { localeFromParam } from '@/config/site';
+
+// Página privada: nunca debe aparecer en buscadores.
+export const metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function SorteoRevealPage({ params }) {
-  const { drawId, secretToken, lang } = params;
-  const dict = lang === 'en' ? en : es;
+  const { drawId, secretToken, lang } = await params;
+  const locale = localeFromParam(lang);
+  const dict = getDictionary(locale);
+
+  // Vercel expone el país del visitante; con eso elegimos tiendas donde
+  // realmente pueda comprar, en vez de deducirlo del idioma.
+  const country = (await headers()).get('x-vercel-ip-country') || '';
 
   try {
     const drawDoc = await adminDb.collection('draws').doc(drawId).get();
@@ -43,14 +53,18 @@ export default async function SorteoRevealPage({ params }) {
     const { giver, receiver } = assignment;
 
     return (
-      <div className="min-h-screen bg-background pt-10 px-4 flex flex-col items-center">
-        <AdBanner />
-        
-        <div className="flex-1 w-full flex items-center justify-center">
-          <RevealCard giverName={giver.name} receiverName={receiver.name} />
+      <div className="min-h-screen bg-background pt-12 px-4 flex flex-col items-center">
+        <div className="flex-1 w-full flex items-start justify-center">
+          <RevealCard
+            giverName={giver.name}
+            receiverName={receiver.name}
+            wishlist={receiver.wishlist || ''}
+            event={drawData.event || null}
+            country={country}
+          />
         </div>
 
-        <div className="mb-10 text-center">
+        <div className="mb-16 text-center">
           <p className="text-default-500 mb-4 text-sm">{dict.reveal.donation_prompt}</p>
           <DonationButton />
         </div>

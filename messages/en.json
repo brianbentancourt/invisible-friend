@@ -2,16 +2,22 @@
   "nav": {
     "login": "Sign In",
     "logout": "Sign Out",
-    "dashboard": "Dashboard"
+    "dashboard": "My draw",
+    "how_it_works": "How it works",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "cta": "Create a free draw"
   },
   "landing": {
-    "tagline": "✨ The smartest way to organize your draw",
+    "tagline": "✨ Free, no sign-up, no peeking",
     "title1": "Organize your",
     "title2": "Secret Santa",
     "title3": "in Seconds",
     "description": "Forget about paper slips. Add your friends, set exclusion rules, and let the system notify everyone via Email or WhatsApp instantly.",
     "cta_start": "Start the Draw",
-    "cta_dashboard": "Go to my Dashboard",
+    "cta_dashboard": "Go to my Draw",
+    "cta_secondary": "See how it works",
+    "no_signup": "No sign-up to start · No card · Ready in 2 minutes",
     "features_title": "How does it work?",
     "features_subtitle": "A simple, fast, and 100% cheat-free process.",
     "f1_title": "Add Participants",
@@ -21,11 +27,129 @@
     "f3_title": "Automatic Draw",
     "f3_desc": "Our algorithm handles everything. No one will know who they got until they receive the message.",
     "f4_title": "Notifications",
-    "f4_desc": "Send the results magically via Email, WhatsApp, or SMS."
+    "f4_desc": "Send the results magically via Email, WhatsApp, or SMS.",
+    "steps_title": "Your draw ready in 3 steps",
+    "steps_subtitle": "Nothing to install and no account needed to try it.",
+    "step1_title": "1. Add your list",
+    "step1_desc": "Type the names and their emails or phone numbers. You can start without signing up: we keep your list in the browser.",
+    "step2_title": "2. Set the rules",
+    "step2_desc": "Mark who can't be matched with whom (couples, siblings, last year's match) and add the budget.",
+    "step3_title": "3. Draw and share",
+    "step3_desc": "Everyone gets their own secret link. Not even you, the organizer, sees the results on screen.",
+    "why_title": "Why people use it",
+    "why_subtitle": "Built so the organizer can join the draw too.",
+    "why1_title": "The organizer plays too",
+    "why1_desc": "Nobody sees the full list of matches. You can run the draw and still take part without cheating.",
+    "why2_title": "Real exclusion rules",
+    "why2_desc": "Stop couples from being matched together, or from repeating last year's assignment.",
+    "why3_title": "Wishlists",
+    "why3_desc": "Every participant can say what they'd like to get. No more gifts nobody uses.",
+    "why4_title": "Works on any phone",
+    "why4_desc": "No apps to install. One WhatsApp link and you're done, grandma included.",
+    "social_proof": "Thousands of draws organized every Christmas",
+    "stat1": "draws completed",
+    "stat2": "participants notified",
+    "stat3": "free forever",
+    "testimonials_title": "What people who used it say",
+    "testimonials": [
+      {
+        "quote": "We used it for the office exchange, 32 people. Loading the list took five minutes and I didn't have to chase anyone on WhatsApp.",
+        "author": "Carolina M.",
+        "role": "Human Resources"
+      },
+      {
+        "quote": "Best part is that as the organizer I took part without knowing anything. With paper slips I always ended up seeing something.",
+        "author": "Diego R.",
+        "role": "Family draw"
+      },
+      {
+        "quote": "The exclusions saved us: we're four couples and we didn't want anyone matched with their partner.",
+        "author": "Lucía F.",
+        "role": "Group of friends"
+      }
+    ],
+    "faq_title": "Frequently asked questions",
+    "faq_subtitle": "Everything people ask us before getting started.",
+    "faq_more": "See all questions",
+    "final_cta_title": "Ready to draw?",
+    "final_cta_desc": "Add your list now. It's free and we don't ask for a card or an account to start.",
+    "final_cta_btn": "Create my free draw"
+  },
+  "faq_home": [
+    {
+      "q": "Is it really free?",
+      "a": "Yes. You can organize draws of up to 15 participants with email and WhatsApp notifications without paying anything. The Premium plan exists for large groups and extra features, but the basic draw is free and you can run it as many times as you want."
+    },
+    {
+      "q": "Do I have to sign up to try it?",
+      "a": "No. You can add your list and set the rules without creating an account: it's saved in your browser. We only ask you to sign in when you run the draw, so we can send the notifications and store the result."
+    },
+    {
+      "q": "Can the organizer take part in the draw?",
+      "a": "Yes, and it's one of the main reasons to use the tool. Results are never shown on screen: each participant gets their own secret link, so whoever organizes can play without seeing anyone else's match."
+    },
+    {
+      "q": "Can I stop two people from being matched?",
+      "a": "Yes. In the participant list you can set exclusions: for example, so a couple doesn't get each other, or so last year's match isn't repeated. The algorithm retries until it finds a combination that respects every rule."
+    },
+    {
+      "q": "How do participants find out?",
+      "a": "Automatically by email and, if you added their phone number, by WhatsApp. You can also copy each person's secret link and send it yourself through any channel you like."
+    },
+    {
+      "q": "What happens with my friends' data?",
+      "a": "We only use names, emails and phone numbers to send the notifications for that draw. We don't sell data or use it for advertising, and you can ask us to delete it at any time."
+    }
+  ],
+  "pricing": {
+    "title": "Simple pricing",
+    "subtitle": "Start free. Pay only if you need more.",
+    "note": "One-off payment per season, no subscription. Prices in Uruguayan pesos (UYU); international cards accepted.",
+    "popular": "Most popular",
+    "per_draw": "one-off payment",
+    "free_forever": "free forever",
+    "free_name": "Free",
+    "free_desc": "For the family draw or the group of friends.",
+    "free_cta": "Start free",
+    "free_features": [
+      "Up to 15 participants",
+      "Unlimited exclusion rules",
+      "Email and WhatsApp notifications",
+      "A secret link for every participant",
+      "Wishlist per participant",
+      "Includes ads"
+    ],
+    "premium_name": "Premium",
+    "premium_desc": "For large groups who want the full experience.",
+    "premium_cta": "Go Premium",
+    "premium_features": [
+      "Unlimited participants",
+      "No ads anywhere on the site",
+      "SMS notifications on top of email and WhatsApp",
+      "Custom message for your participants",
+      "Event date and suggested budget",
+      "Saved draw history",
+      "Export the list to CSV"
+    ],
+    "business_name": "Business",
+    "business_desc": "For the office exchange, with your company's branding.",
+    "business_cta": "Go Business",
+    "business_features": [
+      "Everything in Premium",
+      "Your company logo and colors in the draw",
+      "Several draws running in parallel",
+      "Automatic reminders before the event",
+      "Dashboard with delivery status per person",
+      "Priority email support"
+    ],
+    "guarantee": "Not sure? Write to us before paying and we'll help you decide.",
+    "faq_title": "About payment"
   },
   "dashboard": {
     "title": "Welcome to Secret Santa",
+    "subtitle": "Add the participants, set the rules and run the draw.",
     "premium": "👑 Premium User",
+    "business": "🏢 Business Plan",
     "free_plan": "Free Plan (Max 15 participants)",
     "upgrade": "⭐ Upgrade to Premium",
     "add_participant": "Add Participant",
@@ -35,6 +159,24 @@
     "drawing": "Running draw...",
     "download_log": "Download Log",
     "new_draw": "New Draw",
+    "guest_title": "You're trying it without an account",
+    "guest_desc": "Your list is stored in this browser. Sign in before drawing so we can send the notifications and save the result.",
+    "guest_login": "Sign in",
+    "login_required": "Sign in to run the draw and send the notifications.",
+    "limit_reached": "You reached the free plan limit of {limit} participants.",
+    "limit_cta": "Upgrade with Premium",
+    "event_title": "Event details",
+    "event_name": "Draw name",
+    "event_name_ph": "e.g. Christmas at the office",
+    "event_date": "Exchange date",
+    "event_budget": "Suggested budget",
+    "event_budget_ph": "e.g. $25",
+    "event_message": "Message for participants",
+    "event_message_ph": "e.g. We meet on the 24th at 9pm at mum's place",
+    "event_premium_hint": "Custom message and reminders are part of Premium.",
+    "results_title": "Draw completed",
+    "results_desc": "We sent a secret link to each participant. Share the link manually with anyone who didn't get it.",
+    "export_csv": "Export CSV",
     "errors": {
       "min_participants": "At least 2 participants are required",
       "draw_success": "Draw completed successfully! Notifications have been sent.",
@@ -43,13 +185,18 @@
       "payment_conn_error": "Error connecting to MercadoPago",
       "retry_success": "Notification retried",
       "retry_error": "Error retrying",
-      "retrying": "Retrying sending..."
+      "retrying": "Retrying sending...",
+      "payment_success": "Payment confirmed! You now have full access.",
+      "payment_pending": "Your payment is pending confirmation.",
+      "payment_failure": "The payment could not be completed."
     }
   },
   "participant_form": {
     "name": "Name",
-    "email": "Email (Required for free draw)",
+    "email": "Email (recommended so we can notify them)",
     "phone": "Phone (With country code, e.g., +1)",
+    "wishlist": "Wishlist (optional)",
+    "wishlist_ph": "e.g. a cookbook, something for the bike, plants",
     "add": "Add",
     "error_incomplete": "Please fill all fields",
     "error_no_name": "Name is required",
@@ -60,6 +207,7 @@
     "col_name": "NAME",
     "col_phone": "PHONE",
     "col_email": "EMAIL",
+    "col_wishlist": "WISHES",
     "col_exclusions": "DO NOT GIFT TO",
     "col_notifications": "NOTIFICATIONS",
     "col_actions": "ACTIONS",
@@ -67,6 +215,8 @@
     "pending": "Pending...",
     "retry": "Retry",
     "share_whatsapp": "Share WhatsApp",
+    "copy_link": "Copy link",
+    "copied": "Link copied",
     "empty": "No participants yet.",
     "sent": "Sent",
     "failed": "Failed",
@@ -83,15 +233,70 @@
     "invalid_desc": "This magic link is incorrect or has expired.",
     "server_error": "Server error",
     "server_error_desc": "There was a problem loading the draw. Try again later.",
-    "donation_prompt": "Did you like using this free tool?"
+    "donation_prompt": "Did you like using this free tool?",
+    "wishlist_title": "Their wishlist",
+    "wishlist_empty": "They left no hints. You'll have to get creative 😅",
+    "event_title": "Exchange details",
+    "event_date": "Date",
+    "event_budget": "Budget",
+    "event_message": "Message from the organizer",
+    "secret_warning": "Save this link. It's yours only: nobody else sees who you got.",
+    "viral_title": "Organizing the next one?",
+    "viral_desc": "Create your own Secret Santa draw for free, in under two minutes, with nothing to install.",
+    "viral_cta": "Create my free draw"
+  },
+  "gift_ideas": {
+    "title": "Gift ideas for {name}",
+    "subtitle": "We search the most popular stores for you. Buying through these links helps keep the tool free.",
+    "disclosure": "Contains affiliate links: we may earn a small commission at no extra cost to you.",
+    "search_on": "Search on {store}",
+    "categories": {
+      "budget": "Cheap gifts",
+      "tech": "Tech and gadgets",
+      "home": "Home and kitchen",
+      "books": "Books",
+      "beauty": "Personal care",
+      "experiences": "Games and experiences"
+    },
+    "queries": {
+      "budget": "cheap original gifts",
+      "tech": "tech gadgets gift",
+      "home": "home kitchen gifts",
+      "books": "best selling books",
+      "beauty": "personal care gift set",
+      "experiences": "board games"
+    }
+  },
+  "footer": {
+    "tagline": "The simplest way to organize your Secret Santa: free, nothing to install, and the organizer never has to sit it out.",
+    "product": "Product",
+    "resources": "Resources",
+    "legal": "Legal",
+    "rights": "All rights reserved.",
+    "made_by": "Built by"
+  },
+  "common": {
+    "back_home": "Back to home",
+    "start_free": "Create a free draw",
+    "updated": "Updated",
+    "read_more": "Keep reading"
   },
   "api": {
     "email_subject": "Your Secret Santa",
-    "email_message": "Hello {giver}! In the Secret Santa draw, you got: {receiver}"
+    "email_message": "Hello {giver}! In the Secret Santa draw, you got: {receiver}",
+    "email_link_message": "Hello {giver}! The Secret Santa draw is done 🎁\n\nOpen your secret link to find out who you're gifting:\n{url}\n\nDon't share it with anyone."
   },
   "seo": {
-    "title": "Secret Santa - Free Automatic Online Draw",
-    "description": "Organize your Secret Santa draw online for free. Add participants, set exceptions, and automatically notify via email or WhatsApp.",
-    "keywords": ["secret santa", "secret santa generator", "gift exchange", "online draw", "christmas", "amigo invisible"]
+    "title": "Secret Santa Generator - Free Automatic Online Draw",
+    "description": "Organize your Secret Santa draw online for free. Add participants, set exclusions, and notify everyone by email or WhatsApp automatically. No sign-up to start.",
+    "keywords": [
+      "secret santa",
+      "secret santa generator",
+      "secret santa online",
+      "gift exchange",
+      "online draw",
+      "christmas",
+      "amigo invisible"
+    ]
   }
 }

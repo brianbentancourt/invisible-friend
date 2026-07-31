@@ -2,16 +2,22 @@
   "nav": {
     "login": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
-    "dashboard": "Dashboard"
+    "dashboard": "Mi sorteo",
+    "how_it_works": "Cómo funciona",
+    "pricing": "Precios",
+    "faq": "Preguntas",
+    "cta": "Crear sorteo gratis"
   },
   "landing": {
-    "tagline": "✨ La forma más inteligente de organizar tu sorteo",
+    "tagline": "✨ Gratis, sin registro y sin trampas",
     "title1": "Organiza tu",
     "title2": "Amigo Invisible",
     "title3": "en Segundos",
     "description": "Olvídate de los papelitos. Agrega a tus amigos, define reglas de exclusión y deja que el sistema les notifique a todos por Email o WhatsApp al instante.",
     "cta_start": "Comenzar el Sorteo",
-    "cta_dashboard": "Ir a mi Dashboard",
+    "cta_dashboard": "Ir a mi Sorteo",
+    "cta_secondary": "Ver cómo funciona",
+    "no_signup": "Sin registro para empezar · Sin tarjeta · Listo en 2 minutos",
     "features_title": "¿Cómo funciona?",
     "features_subtitle": "Un proceso simple, rápido y 100% libre de trampas.",
     "f1_title": "Agrega Participantes",
@@ -21,11 +27,129 @@
     "f3_title": "Sorteo Automático",
     "f3_desc": "Nuestro algoritmo se encarga de todo. Nadie sabrá quién le toca a quién hasta que reciban el mensaje.",
     "f4_title": "Notificaciones",
-    "f4_desc": "Envía los resultados mágicamente por Correo Electrónico, WhatsApp o SMS."
+    "f4_desc": "Envía los resultados mágicamente por Correo Electrónico, WhatsApp o SMS.",
+    "steps_title": "Tu sorteo listo en 3 pasos",
+    "steps_subtitle": "No hace falta instalar nada ni crear una cuenta para probarlo.",
+    "step1_title": "1. Carga la lista",
+    "step1_desc": "Escribe los nombres y sus emails o teléfonos. Puedes empezar sin registrarte: guardamos tu lista en el navegador.",
+    "step2_title": "2. Define las reglas",
+    "step2_desc": "Marca quién no puede tocarle a quién (parejas, hermanos, el que ya le tocó el año pasado) y añade el presupuesto.",
+    "step3_title": "3. Sortea y comparte",
+    "step3_desc": "Cada persona recibe un enlace secreto y personal. Ni siquiera tú, como organizador, ves los resultados en pantalla.",
+    "why_title": "Por qué la gente lo usa",
+    "why_subtitle": "Pensado para que el organizador también pueda participar del sorteo.",
+    "why1_title": "El organizador también juega",
+    "why1_desc": "Nadie ve la lista completa de asignaciones. Puedes sortear y participar sin hacer trampa.",
+    "why2_title": "Reglas de exclusión reales",
+    "why2_desc": "Evita que las parejas se toquen entre sí o que se repita la asignación del año pasado.",
+    "why3_title": "Listas de deseos",
+    "why3_desc": "Cada participante puede decir qué le gustaría recibir. Se acabaron los regalos que nadie usa.",
+    "why4_title": "Funciona en cualquier teléfono",
+    "why4_desc": "No hay que instalar apps. Un enlace por WhatsApp y listo, hasta la abuela puede.",
+    "social_proof": "Miles de sorteos organizados cada Navidad",
+    "stat1": "sorteos realizados",
+    "stat2": "participantes notificados",
+    "stat3": "gratis para siempre",
+    "testimonials_title": "Lo que dicen quienes ya lo usaron",
+    "testimonials": [
+      {
+        "quote": "Lo usamos para el intercambio de la oficina, 32 personas. Cargar la lista llevó cinco minutos y no tuve que perseguir a nadie por WhatsApp.",
+        "author": "Carolina M.",
+        "role": "Recursos Humanos"
+      },
+      {
+        "quote": "Lo mejor es que como organizador yo también participé sin saber nada. Con los papelitos siempre terminaba viendo algo.",
+        "author": "Diego R.",
+        "role": "Sorteo familiar"
+      },
+      {
+        "quote": "Las exclusiones nos salvaron: somos cuatro parejas y no queríamos que nadie le tocara a su pareja.",
+        "author": "Lucía F.",
+        "role": "Grupo de amigos"
+      }
+    ],
+    "faq_title": "Preguntas frecuentes",
+    "faq_subtitle": "Todo lo que suelen preguntarnos antes de empezar.",
+    "faq_more": "Ver todas las preguntas",
+    "final_cta_title": "¿Listo para sortear?",
+    "final_cta_desc": "Carga tu lista ahora. Es gratis y no te pedimos tarjeta ni registro para empezar.",
+    "final_cta_btn": "Crear mi sorteo gratis"
+  },
+  "faq_home": [
+    {
+      "q": "¿Es realmente gratis?",
+      "a": "Sí. Puedes organizar sorteos de hasta 15 participantes con notificaciones por email y WhatsApp sin pagar nada. El plan Premium existe para grupos grandes y funciones extra, pero el sorteo básico es gratuito y sin límite de veces."
+    },
+    {
+      "q": "¿Tengo que registrarme para probarlo?",
+      "a": "No. Puedes cargar tu lista y configurar las reglas sin crear cuenta: se guarda en tu navegador. Sólo te pedimos iniciar sesión en el momento de ejecutar el sorteo, para poder enviar las notificaciones y guardar el resultado."
+    },
+    {
+      "q": "¿El organizador puede participar del sorteo?",
+      "a": "Sí, y es una de las razones principales para usar la herramienta. Los resultados nunca se muestran en pantalla: cada participante recibe un enlace secreto individual, así que quien organiza puede jugar sin ver las asignaciones del resto."
+    },
+    {
+      "q": "¿Puedo evitar que dos personas se toquen entre sí?",
+      "a": "Sí. En la lista de participantes puedes marcar exclusiones: por ejemplo, que una pareja no se regale entre sí o que no se repita la asignación del año pasado. El algoritmo reintenta hasta encontrar una combinación que respete todas las reglas."
+    },
+    {
+      "q": "¿Cómo se enteran los participantes?",
+      "a": "Automáticamente por email y, si cargaste el teléfono, por WhatsApp. También puedes copiar el enlace secreto de cada persona y enviárselo tú por el canal que prefieras."
+    },
+    {
+      "q": "¿Qué pasa con los datos de mis amigos?",
+      "a": "Sólo usamos los nombres, emails y teléfonos para enviar las notificaciones de ese sorteo. No vendemos datos ni los usamos para publicidad, y puedes pedir que se borren cuando quieras."
+    }
+  ],
+  "pricing": {
+    "title": "Precios simples",
+    "subtitle": "Empieza gratis. Paga sólo si necesitas más.",
+    "note": "Pago único por temporada, sin suscripción. Precios en pesos uruguayos (UYU); aceptamos tarjetas internacionales.",
+    "popular": "El más elegido",
+    "per_draw": "pago único",
+    "free_forever": "gratis para siempre",
+    "free_name": "Gratis",
+    "free_desc": "Para el sorteo de la familia o el grupo de amigos.",
+    "free_cta": "Empezar gratis",
+    "free_features": [
+      "Hasta 15 participantes",
+      "Reglas de exclusión ilimitadas",
+      "Notificaciones por email y WhatsApp",
+      "Enlace secreto para cada participante",
+      "Lista de deseos por participante",
+      "Con publicidad"
+    ],
+    "premium_name": "Premium",
+    "premium_desc": "Para grupos grandes que quieren la experiencia completa.",
+    "premium_cta": "Pasar a Premium",
+    "premium_features": [
+      "Participantes ilimitados",
+      "Sin publicidad en todo el sitio",
+      "Notificaciones por SMS además de email y WhatsApp",
+      "Mensaje personalizado para tus participantes",
+      "Fecha del evento y presupuesto sugerido",
+      "Historial de sorteos guardado",
+      "Exportar la lista a CSV"
+    ],
+    "business_name": "Empresas",
+    "business_desc": "Para el intercambio de la oficina, con la marca de tu empresa.",
+    "business_cta": "Pasar a Empresas",
+    "business_features": [
+      "Todo lo de Premium",
+      "Logo y colores de tu empresa en el sorteo",
+      "Varios sorteos en paralelo",
+      "Recordatorios automáticos antes del evento",
+      "Panel con el estado de envío de cada persona",
+      "Soporte prioritario por email"
+    ],
+    "guarantee": "¿Dudas? Escríbenos antes de pagar y te ayudamos a decidir.",
+    "faq_title": "Sobre el pago"
   },
   "dashboard": {
     "title": "Bienvenido al Amigo Invisible",
+    "subtitle": "Carga a los participantes, define las reglas y sortea.",
     "premium": "👑 Usuario Premium",
+    "business": "🏢 Plan Empresas",
     "free_plan": "Plan Gratuito (Máx 15 participantes)",
     "upgrade": "⭐ Upgrade a Premium",
     "add_participant": "Agregar Participante",
@@ -35,6 +159,24 @@
     "drawing": "Realizando sorteo...",
     "download_log": "Descargar Log",
     "new_draw": "Nuevo Sorteo",
+    "guest_title": "Estás probando sin cuenta",
+    "guest_desc": "Tu lista se guarda en este navegador. Inicia sesión antes de sortear para que podamos enviar las notificaciones y guardar el resultado.",
+    "guest_login": "Iniciar sesión",
+    "login_required": "Inicia sesión para ejecutar el sorteo y enviar las notificaciones.",
+    "limit_reached": "Llegaste al límite de {limit} participantes del plan gratuito.",
+    "limit_cta": "Ampliar con Premium",
+    "event_title": "Detalles del evento",
+    "event_name": "Nombre del sorteo",
+    "event_name_ph": "Ej: Navidad en la oficina",
+    "event_date": "Fecha del intercambio",
+    "event_budget": "Presupuesto sugerido",
+    "event_budget_ph": "Ej: $1000",
+    "event_message": "Mensaje para los participantes",
+    "event_message_ph": "Ej: Nos juntamos el 24 a las 21h en casa de mamá",
+    "event_premium_hint": "El mensaje personalizado y los recordatorios son parte de Premium.",
+    "results_title": "Sorteo realizado",
+    "results_desc": "Enviamos un enlace secreto a cada participante. Comparte el enlace manualmente con quien no lo haya recibido.",
+    "export_csv": "Exportar CSV",
     "errors": {
       "min_participants": "Se necesitan al menos 2 participantes",
       "draw_success": "¡Sorteo realizado con éxito! Las notificaciones han sido enviadas.",
@@ -43,13 +185,18 @@
       "payment_conn_error": "Error al conectar con MercadoPago",
       "retry_success": "Notificación reintentada",
       "retry_error": "Error al reintentar",
-      "retrying": "Reintentando envío..."
+      "retrying": "Reintentando envío...",
+      "payment_success": "¡Pago acreditado! Ya tienes acceso completo.",
+      "payment_pending": "Tu pago está pendiente de acreditación.",
+      "payment_failure": "El pago no se pudo completar."
     }
   },
   "participant_form": {
     "name": "Nombre",
-    "email": "Email (Obligatorio para sorteo free)",
+    "email": "Email (recomendado para avisar del sorteo)",
     "phone": "Teléfono (Con código de país, ej: +598)",
+    "wishlist": "Lista de deseos (opcional)",
+    "wishlist_ph": "Ej: un libro de cocina, algo para la bici, plantas",
     "add": "Agregar",
     "error_incomplete": "Por favor completa todos los campos",
     "error_no_name": "El nombre es obligatorio",
@@ -60,6 +207,7 @@
     "col_name": "NOMBRE",
     "col_phone": "TELÉFONO",
     "col_email": "EMAIL",
+    "col_wishlist": "DESEOS",
     "col_exclusions": "NO REGALAR A",
     "col_notifications": "NOTIFICACIONES",
     "col_actions": "ACCIONES",
@@ -67,6 +215,8 @@
     "pending": "Pendiente...",
     "retry": "Reintentar",
     "share_whatsapp": "Compartir WhatsApp",
+    "copy_link": "Copiar enlace",
+    "copied": "Enlace copiado",
     "empty": "No hay participantes aún.",
     "sent": "Enviado",
     "failed": "Falló",
@@ -83,15 +233,71 @@
     "invalid_desc": "Este enlace mágico es incorrecto o ha caducado.",
     "server_error": "Error del servidor",
     "server_error_desc": "Hubo un problema al cargar el sorteo. Inténtalo más tarde.",
-    "donation_prompt": "¿Te gustó usar esta herramienta gratuita?"
+    "donation_prompt": "¿Te gustó usar esta herramienta gratuita?",
+    "wishlist_title": "Su lista de deseos",
+    "wishlist_empty": "No dejó pistas. Tendrás que usar la imaginación 😅",
+    "event_title": "Detalles del intercambio",
+    "event_date": "Fecha",
+    "event_budget": "Presupuesto",
+    "event_message": "Mensaje del organizador",
+    "secret_warning": "Guarda este enlace. Es sólo tuyo: nadie más ve a quién te tocó.",
+    "viral_title": "¿Organizas tú el próximo?",
+    "viral_desc": "Crea tu propio sorteo de Amigo Invisible gratis, en menos de dos minutos y sin instalar nada.",
+    "viral_cta": "Crear mi sorteo gratis"
+  },
+  "gift_ideas": {
+    "title": "Ideas de regalo para {name}",
+    "subtitle": "Buscamos por ti en las tiendas más usadas. Si compras desde estos enlaces, nos ayudas a mantener la herramienta gratis.",
+    "disclosure": "Contiene enlaces de afiliado: puede que ganemos una pequeña comisión sin coste extra para ti.",
+    "search_on": "Buscar en {store}",
+    "categories": {
+      "budget": "Regalos baratos",
+      "tech": "Tecnología y gadgets",
+      "home": "Casa y cocina",
+      "books": "Libros",
+      "beauty": "Cuidado personal",
+      "experiences": "Experiencias y juegos"
+    },
+    "queries": {
+      "budget": "regalos originales baratos",
+      "tech": "gadgets tecnologia regalo",
+      "home": "regalos para la casa cocina",
+      "books": "libros mas vendidos",
+      "beauty": "set cuidado personal regalo",
+      "experiences": "juegos de mesa"
+    }
+  },
+  "footer": {
+    "tagline": "La forma más simple de organizar tu Amigo Invisible: gratis, sin instalar nada y sin que el organizador tenga que quedarse afuera.",
+    "product": "Producto",
+    "resources": "Recursos",
+    "legal": "Legal",
+    "rights": "Todos los derechos reservados.",
+    "made_by": "Desarrollado por"
+  },
+  "common": {
+    "back_home": "Volver al inicio",
+    "start_free": "Crear sorteo gratis",
+    "updated": "Actualizado",
+    "read_more": "Seguir leyendo"
   },
   "api": {
     "email_subject": "Tu Amigo Invisible",
-    "email_message": "Hola {giver}! En el sorteo del amigo invisible te ha tocado regalar a: {receiver}"
+    "email_message": "Hola {giver}! En el sorteo del amigo invisible te ha tocado regalar a: {receiver}",
+    "email_link_message": "Hola {giver}! Ya se hizo el sorteo del Amigo Invisible 🎁\n\nEntra a tu enlace secreto para descubrir a quién te toca regalar:\n{url}\n\nNo lo compartas con nadie."
   },
   "seo": {
     "title": "Amigo Invisible - Sorteo Online Automático y Gratis",
-    "description": "Organiza tu sorteo de Amigo Invisible online y gratis. Agrega participantes, configura excepciones y notifica por email o WhatsApp automáticamente.",
-    "keywords": ["amigo invisible", "sorteo amigo invisible", "secret santa", "intercambio de regalos", "sorteo online", "navidad"]
+    "description": "Organiza tu sorteo de Amigo Invisible online y gratis. Agrega participantes, configura exclusiones y notifica por email o WhatsApp automáticamente. Sin registro para empezar.",
+    "keywords": [
+      "amigo invisible",
+      "sorteo amigo invisible",
+      "amigo invisible online",
+      "amigo secreto",
+      "secret santa",
+      "intercambio de regalos",
+      "sorteo online",
+      "navidad"
+    ]
   }
 }

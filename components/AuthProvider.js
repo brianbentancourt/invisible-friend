@@ -65,9 +65,12 @@ export function AuthProvider({ children }) {
         }
     };
 
+    // Importante: los hijos se renderizan siempre, también mientras Firebase
+    // resuelve la sesión. Con `{!loading && children}` el HTML del servidor
+    // salía vacío y los buscadores no veían el contenido de la landing.
     return (
         <AuthContext.Provider value={{ user, loading, logout }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 }

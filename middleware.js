@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const locales = ['es', 'en'];
+const locales = ['es', 'en', 'pt'];
 const defaultLocale = 'es';
 
 function getLocale(request) {
@@ -8,17 +8,18 @@ function getLocale(request) {
     if (cookie && locales.includes(cookie)) {
         return cookie;
     }
-    
+
     // Fallback a accept-language (simple pero priorizando el que aparece primero)
-    const acceptLang = request.headers.get('accept-language');
+    const acceptLang = request.headers.get('accept-language')?.toLowerCase();
     if (acceptLang) {
-        const esIndex = acceptLang.indexOf('es');
-        const enIndex = acceptLang.indexOf('en');
-        
-        if (esIndex !== -1 && (enIndex === -1 || esIndex < enIndex)) return 'es';
-        if (enIndex !== -1 && (esIndex === -1 || enIndex < esIndex)) return 'en';
+        const positions = locales
+            .map((locale) => ({ locale, index: acceptLang.indexOf(locale) }))
+            .filter(({ index }) => index !== -1)
+            .sort((a, b) => a.index - b.index);
+
+        if (positions.length > 0) return positions[0].locale;
     }
-    
+
     return defaultLocale;
 }
 
@@ -46,22 +47,9 @@ export function middleware(request) {
         return NextResponse.redirect(request.nextUrl);
     }
 
-    // Extraer el locale actual de la URL
-    const currentLocale = locales.find((locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`);
-    
-    // Validar autenticación
-    const publicRoutes = [`/${currentLocale}/auth/signin`, `/${currentLocale}`];
-    
-    if (publicRoutes.includes(pathname) || pathname.startsWith(`/${currentLocale}/sorteo/`)) {
-        return NextResponse.next();
-    }
-
-    const token = request.cookies.get('session');
-
-    if (!token && pathname !== `/${currentLocale}/auth/signin`) {
-        return NextResponse.redirect(new URL(`/${currentLocale}/auth/signin`, request.url));
-    }
-
+    // Todo el sitio es público. El dashboard funciona en modo invitado (los
+    // participantes viven en localStorage) y el login se pide recién al sortear,
+    // cuando el usuario ya invirtió tiempo cargando su lista.
     return NextResponse.next();
 }
 

@@ -1,10 +1,18 @@
-# Firebase
+# Sitio (IMPRESCINDIBLE en producción: sin esto el checkout apunta a localhost)
+NEXT_PUBLIC_BASE_URL=https://amigoinvisible.brianbentancourt.com
+
+# Firebase (cliente)
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
+
+# Firebase (admin / servidor)
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
 
 # SendGrid
 SENDGRID_API_KEY=
@@ -15,3 +23,38 @@ TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_WHATSAPP_NUMBER=
 TWILIO_PHONE_NUMBER=
+
+# MercadoPago
+MP_ACCESS_TOKEN=
+NEXT_PUBLIC_MP_PUBLIC_KEY=
+# Clave secreta del webhook (Panel MP > Webhooks). Sin ella no se valida la firma.
+MP_WEBHOOK_SECRET=
+
+# Cuentas con acceso completo, separadas por coma
+ADMIN_EMAILS=
+
+# Analítica
+NEXT_PUBLIC_GA_ID=
+
+# AdSense
+NEXT_PUBLIC_ADSENSE_PUB_ID=
+NEXT_PUBLIC_ADSENSE_SLOT_ID=
+
+# Verificación de Google Search Console (código del meta tag)
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=
+
+# Afiliados: un tag por marketplace (Amazon Associates es un programa distinto
+# en cada dominio). Una tienda sólo se muestra si su tag está configurado; si
+# para el país del visitante no hay ninguno, el bloque de regalos no aparece.
+NEXT_PUBLIC_AMAZON_TAG_ES=
+NEXT_PUBLIC_AMAZON_TAG_COM=
+NEXT_PUBLIC_AMAZON_TAG_BR=
+NEXT_PUBLIC_AMAZON_TAG_MX=
+
+# MercadoLibre: el programa de afiliados no está disponible en Uruguay (sí en
+# AR, BR, MX y CL). Dejar vacío hasta tener acceso.
+NEXT_PUBLIC_MELI_TAG_UY=
+NEXT_PUBLIC_MELI_TAG_AR=
+NEXT_PUBLIC_MELI_TAG_BR=
+NEXT_PUBLIC_MELI_TAG_MX=
+NEXT_PUBLIC_MELI_TAG_CL=

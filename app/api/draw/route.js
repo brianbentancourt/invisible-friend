@@ -1,33 +1,34 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import sgMail from '@sendgrid/mail';
-import twilio from 'twilio';
 import { adminDb } from '@/config/firebase-admin';
-import en from '@/messages/en.json';
-import es from '@/messages/es.json';
+import { getDictionary } from '@/lib/i18n';
+import { localeFromParam, FREE_PARTICIPANT_LIMIT } from '@/config/site';
+import {
+    sendEmail,
+    sendWhatsApp,
+    sendSMS,
+    buildRevealUrl,
+    buildEmailHtml,
+} from '@/lib/notifications';
 
-// Configurar SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-// Configurar Twilio
-const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-const twilioToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioClient = (twilioSid && twilioToken) ? twilio(twilioSid, twilioToken) : null;
-
-if (!twilioSid || !twilioToken) {
-    console.warn('Twilio credentials are not set. SMS and WhatsApp notifications will not work.');
-}
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'brianbentancourt9@gmail.com')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
 
 function generateLogContent(assignments) {
-    const logContent = assignments.map(({ giver, receiver }) =>
-        `${giver.name} (${giver.email}) -> ${receiver.name} (${receiver.email})`
-    ).join('\n');
+    const logContent = assignments
+        .map(({ giver, receiver }) => `${giver.name} (${giver.email}) -> ${receiver.name} (${receiver.email})`)
+        .join('\n');
 
-    return `Sorteo Amigo Invisible - ${new Date().toLocaleString()}\n` +
+    return (
+        `Sorteo Amigo Invisible - ${new Date().toLocaleString()}\n` +
         '================================================\n' +
-        logContent + '\n\n' +
+        logContent +
+        '\n\n' +
         `Total participantes: ${assignments.length}\n` +
-        '================================================\n';
+        '================================================\n'
+    );
 }
 
 function generateValidAssignments(participants) {
@@ -48,7 +49,7 @@ function generateValidAssignments(participants) {
             const giverParticipant = participants[giver];
             const giverExclusions = giverParticipant.exclusions || [];
 
-            let validReceivers = availableReceivers.filter(r => {
+            let validReceivers = availableReceivers.filter((r) => {
                 const receiverParticipant = participants[r];
                 const isSelf = r === giver;
                 const isExcluded = giverExclusions.includes(receiverParticipant.id);
@@ -64,16 +65,15 @@ function generateValidAssignments(participants) {
             const receiver = validReceivers[randomIndex];
 
             assignments[giver] = receiver;
-            availableReceivers = availableReceivers.filter(r => r !== receiver);
+            availableReceivers = availableReceivers.filter((r) => r !== receiver);
         }
 
         if (success) {
-            // Ya no forzamos un ciclo único (visited.size === n) 
-            // ya que con muchas exclusiones puede ser imposible.
-            // Siempre y cuando success sea true, significa que todos regalan y todos reciben.
+            // No forzamos un ciclo único: con muchas exclusiones puede ser imposible.
+            // Con success === true ya está garantizado que todos regalan y reciben.
             return assignments.map((receiverIndex, giverIndex) => ({
                 giver: participants[giverIndex],
-                receiver: participants[receiverIndex]
+                receiver: participants[receiverIndex],
             }));
         }
     }
@@ -81,128 +81,38 @@ function generateValidAssignments(participants) {
     throw new Error('No se pudo generar una asignación válida después de varios intentos');
 }
 
-function formatPhoneNumber(phone) {
-    if (!phone) return '';
-    let cleaned = phone.replace(/[^\d+]/g, '');
-
-    // Si empieza con 598 sin +, agregar +
-    if (cleaned.startsWith('598')) {
-        cleaned = '+' + cleaned;
-    }
-
-    // Corregir +5980... a +598... (eliminar 0 después del prefijo)
-    if (cleaned.startsWith('+5980')) {
-        cleaned = '+598' + cleaned.substring(5);
-    }
-
-    // Corregir 09... a +5989... (asumir Uruguay para celulares que empiezan con 09)
-    if (cleaned.startsWith('09')) {
-        cleaned = '+598' + cleaned.substring(1);
-    }
-
-    return cleaned;
-}
-
-async function sendEmail(to, subject, text) {
-    const msg = {
-        to,
-        from: process.env.SENDGRID_FROM_EMAIL,
-        subject,
-        text,
-    };
-
-    try {
-        await sgMail.send(msg);
-        return true;
-    } catch (error) {
-        console.error('Error sending email:', error);
-        return false;
-    }
-}
-
-async function sendWhatsApp(to, message) {
-    if (!twilioClient) {
-        console.warn('Twilio client not initialized. Skipping WhatsApp.');
-        return false;
-    }
-    const formattedPhone = formatPhoneNumber(to);
-    // Asegurar que el número de origen tenga el formato correcto para WhatsApp
-    // Si la variable de entorno ya incluye "whatsapp:", lo quitamos para no duplicarlo
-    const twilioWhatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
-    if (!twilioWhatsappNumber) {
-        console.warn('TWILIO_WHATSAPP_NUMBER not set. Skipping WhatsApp.');
-        return false;
-    }
-
-    const fromNumber = twilioWhatsappNumber.replace('whatsapp:', '');
-    
-    try {
-        await twilioClient.messages.create({
-            body: message,
-            from: `whatsapp:${fromNumber}`,
-            to: `whatsapp:${formattedPhone}`
-        });
-        console.log(`WhatsApp sent to ${formattedPhone}`);
-        return true;
-    } catch (error) {
-        console.error('Error sending WhatsApp:', error);
-        return false;
-    }
-}
-
-async function sendSMS(to, message) {
-    if (!twilioClient) {
-        console.warn('Twilio client not initialized. Skipping SMS.');
-        return false;
-    }
-    const formattedPhone = formatPhoneNumber(to);
-    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-
-    if (!twilioPhoneNumber) {
-        console.warn('TWILIO_PHONE_NUMBER not set. Skipping SMS.');
-        return false;
-    }
-
-    try {
-        await twilioClient.messages.create({
-            body: message,
-            from: twilioPhoneNumber,
-            to: formattedPhone
-        });
-        console.log(`SMS sent to ${formattedPhone}`);
-        return true;
-    } catch (error) {
-        console.error('Error sending SMS:', error);
-        return false;
-    }
-}
-
 export async function POST(request) {
     try {
-        const { participants, userEmail, lang } = await request.json();
-        const dict = lang === 'en' ? en : es;
+        const { participants, userEmail, lang, event } = await request.json();
+        const locale = localeFromParam(lang);
+        const dict = getDictionary(locale);
 
         if (!Array.isArray(participants) || participants.length < 2) {
-            return NextResponse.json(
-                { error: dict.dashboard.errors.min_participants },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: dict.dashboard.errors.min_participants }, { status: 400 });
+        }
+
+        // El sorteo requiere sesión: es lo que nos permite enviar las
+        // notificaciones y asociar el resultado a una cuenta.
+        if (!userEmail) {
+            return NextResponse.json({ error: dict.dashboard.login_required }, { status: 401 });
         }
 
         // Verificar estado Premium
-        let isPremium = false;
-        if (userEmail === 'brianbentancourt9@gmail.com') {
-            isPremium = true;
-        } else if (userEmail) {
+        let isPremium = ADMIN_EMAILS.includes(userEmail.toLowerCase());
+
+        if (!isPremium) {
             const userDoc = await adminDb.collection('users').doc(userEmail).get();
             if (userDoc.exists && userDoc.data().isPremium) {
                 isPremium = true;
             }
         }
 
-        if (!isPremium && participants.length > 15) {
+        if (!isPremium && participants.length > FREE_PARTICIPANT_LIMIT) {
             return NextResponse.json(
-                { error: 'El plan gratuito permite hasta 15 participantes. Actualiza a Premium para añadir más.' },
+                {
+                    error: dict.dashboard.limit_reached.replace('{limit}', FREE_PARTICIPANT_LIMIT),
+                    upgradeRequired: true,
+                },
                 { status: 403 }
             );
         }
@@ -211,65 +121,88 @@ export async function POST(request) {
         const assignments = generateValidAssignments(participants);
 
         if (!assignments) {
-            return NextResponse.json(
-                { error: dict.dashboard.errors.draw_error },
-                { status: 500 }
-            );
+            return NextResponse.json({ error: dict.dashboard.errors.draw_error }, { status: 500 });
         }
 
-        // Generar el log en texto
-        const fullLog = generateLogContent(assignments);
-
-        // Enviar notificaciones y capturar estado
-        const results = await Promise.all(assignments.map(async ({ giver, receiver }) => {
-            const secretToken = crypto.randomUUID();
-            
-            // Si quieres, aquí podrías modificar el mensaje para incluir el link si lo envías por WhatsApp, pero
-            // como la gracia es que el usuario lo comparta manualmente con el botón mágico, lo dejamos simple.
-            const subject = dict.api.email_subject;
-            const message = dict.api.email_message
-                .replace('{giver}', giver.name)
-                .replace('{receiver}', receiver.name);
-
-            const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
-                sendEmail(giver.email, subject, message),
-                sendWhatsApp(giver.phone, message),
-                isPremium ? sendSMS(giver.phone, message) : Promise.resolve(false)
-            ]);
-
-            return {
-                giver,
-                receiver,
-                secretToken,
-                status: {
-                    email: emailSuccess,
-                    whatsapp: waSuccess,
-                    sms: smsSuccess
-                }
-            };
-        }));
-
-        // Guardar resultado detallado en Firestore con un ID único garantizado
+        // Reservamos el id del sorteo antes de notificar: los mensajes llevan el
+        // enlace secreto, así que necesitamos la URL definitiva desde el principio.
         const drawRef = adminDb.collection('draws').doc();
         const drawId = drawRef.id;
+
+        // Generar el log en texto (sólo para el organizador que lo descarga)
+        const fullLog = generateLogContent(assignments);
+
+        const results = await Promise.all(
+            assignments.map(async ({ giver, receiver }) => {
+                const secretToken = crypto.randomUUID();
+                const url = buildRevealUrl({ locale, drawId, secretToken });
+
+                // El mensaje lleva el enlace en lugar del nombre del destinatario:
+                // así la sorpresa se mantiene aunque alguien vea la notificación
+                // por encima del hombro, y el participante pasa por la página de
+                // revelación (con lista de deseos e ideas de regalo).
+                const subject = dict.api.email_subject;
+                const message = dict.api.email_link_message
+                    .replace('{giver}', giver.name)
+                    .replace('{url}', url);
+
+                const html = buildEmailHtml({
+                    text: message,
+                    url,
+                    ctaLabel: dict.reveal.reveal_btn,
+                });
+
+                const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
+                    sendEmail(giver.email, subject, message, html),
+                    sendWhatsApp(giver.phone, message),
+                    isPremium ? sendSMS(giver.phone, message) : Promise.resolve(false),
+                ]);
+
+                return {
+                    giver,
+                    receiver,
+                    secretToken,
+                    status: {
+                        email: emailSuccess,
+                        whatsapp: waSuccess,
+                        sms: smsSuccess,
+                    },
+                };
+            })
+        );
+
         const drawData = {
             id: drawId,
             timestamp: new Date().toISOString(),
-            results
+            organizerEmail: userEmail,
+            locale,
+            // Los detalles del evento se muestran en la página de revelación.
+            event: event
+                ? {
+                      name: event.name || '',
+                      date: event.date || '',
+                      budget: event.budget || '',
+                      message: isPremium ? event.message || '' : '',
+                  }
+                : null,
+            results,
         };
 
         try {
             await drawRef.set(drawData);
         } catch (dbError) {
             console.error('Error guardando en Firestore:', dbError);
-            // Podemos decidir si fallar o continuar; lo ideal es que si falla no se puedan reintentar pero no afecte el sorteo.
+            // El sorteo ya se envió; no lo abortamos, pero sin persistencia
+            // los enlaces no funcionarían, así que lo reportamos.
+            return NextResponse.json({ error: dict.dashboard.errors.draw_error }, { status: 500 });
         }
 
-        // Retornar resultados al frontend (sin revelar receptor, pero con el token para generar el enlace)
+        // Retornar resultados al frontend (sin revelar receptor, pero con el token
+        // para que el organizador pueda compartir el enlace manualmente)
         const frontendResults = results.map(({ giver, status, secretToken }) => ({
             participant: giver,
             status,
-            secretToken
+            secretToken,
         }));
 
         return NextResponse.json({
@@ -277,14 +210,10 @@ export async function POST(request) {
             message: 'Sorteo realizado y notificaciones enviadas',
             logContent: fullLog,
             drawId,
-            results: frontendResults
+            results: frontendResults,
         });
-
     } catch (error) {
         console.error('Error en el sorteo:', error);
-        return NextResponse.json(
-            { error: 'Error al realizar el sorteo' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Error al realizar el sorteo' }, { status: 500 });
     }
 }
