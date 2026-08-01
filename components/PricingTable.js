@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Card, CardBody, Chip } from '@nextui-org/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/components/AuthProvider';
 import { useLanguage } from '@/components/LanguageProvider';
-import { PLANS } from '@/config/site';
+import PaymentMethodSelector from '@/components/PaymentMethodSelector';
+import { PLANS, DEFAULT_PAYMENT_PROVIDER, PAYPAL_ENABLED } from '@/config/site';
+import { suggestedProvider } from '@/lib/payments';
 import { track, EVENTS } from '@/lib/analytics';
 
 function Check() {
@@ -31,9 +33,18 @@ export default function PricingTable() {
     const { user } = useAuth();
     const router = useRouter();
     const [loadingPlan, setLoadingPlan] = useState(null);
+    const [provider, setProvider] = useState(DEFAULT_PAYMENT_PROVIDER);
+
+    // La detección depende de la zona horaria del navegador, así que se hace
+    // después del montaje para no romper la hidratación del render del servidor.
+    useEffect(() => {
+        setProvider(suggestedProvider());
+    }, []);
+
+    const isPaypal = provider === 'paypal';
 
     const startCheckout = async (plan) => {
-        track(EVENTS.UPGRADE_CLICK, { plan, source: 'pricing_table' });
+        track(EVENTS.UPGRADE_CLICK, { plan, source: 'pricing_table', provider });
 
         if (!user?.email) {
             // Sin cuenta no podemos asociar el pago, así que primero login.
@@ -46,12 +57,12 @@ export default function PricingTable() {
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userEmail: user.email, plan, lang: locale }),
+                body: JSON.stringify({ userEmail: user.email, plan, lang: locale, provider }),
             });
             const data = await response.json();
 
             if (data.url) {
-                track(EVENTS.CHECKOUT_STARTED, { plan });
+                track(EVENTS.CHECKOUT_STARTED, { plan, provider });
                 window.location.href = data.url;
             } else {
                 toast.error(t('dashboard.errors.payment_init_error'));
@@ -104,6 +115,12 @@ export default function PricingTable() {
 
     return (
         <div>
+            <PaymentMethodSelector
+                value={provider}
+                onChange={setProvider}
+                className="mb-8"
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 {tiers.map((tier) => (
                     <Card
@@ -128,18 +145,26 @@ export default function PricingTable() {
                             </div>
 
                             <div>
+                                {/* Con PayPal el cobro es en USD, así que la moneda
+                                    principal cambia: mostrar UYU allí confundiría. */}
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-4xl font-extrabold">
-                                        {tier.price === 0 ? '$0' : `$${tier.price}`}
+                                        {tier.price === 0
+                                            ? '$0'
+                                            : `$${isPaypal ? tier.priceUsd : tier.price}`}
                                     </span>
                                     {tier.price > 0 && (
-                                        <span className="text-default-400 text-sm">UYU</span>
+                                        <span className="text-default-400 text-sm">
+                                            {isPaypal ? 'USD' : 'UYU'}
+                                        </span>
                                     )}
                                 </div>
                                 <p className="text-default-400 text-xs mt-1">
                                     {tier.price === 0
                                         ? t('pricing.free_forever')
-                                        : `≈ USD ${tier.priceUsd} · ${t('pricing.per_draw')}`}
+                                        : `≈ ${isPaypal ? `UYU ${tier.price}` : `USD ${tier.priceUsd}`} · ${t(
+                                              'pricing.per_draw'
+                                          )}`}
                                 </p>
                             </div>
 
@@ -167,7 +192,7 @@ export default function PricingTable() {
             </div>
 
             <p className="text-center text-default-400 text-xs mt-8 max-w-2xl mx-auto">
-                {t('pricing.note')}
+                {PAYPAL_ENABLED ? t('pricing.note_multi') : t('pricing.note')}
             </p>
         </div>
     );

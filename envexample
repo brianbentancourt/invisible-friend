@@ -30,6 +30,17 @@ NEXT_PUBLIC_MP_PUBLIC_KEY=
 # Clave secreta del webhook (Panel MP > Webhooks). Sin ella no se valida la firma.
 MP_WEBHOOK_SECRET=
 
+# PayPal (medio de pago universal para quienes están fuera de LatAm).
+# Sin NEXT_PUBLIC_PAYPAL_CLIENT_ID el selector no aparece y todo sigue yendo
+# por MercadoPago. Credenciales en developer.paypal.com > Apps & Credentials.
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+# sandbox (por defecto) o live. Sólo 'live' cobra de verdad.
+PAYPAL_ENV=sandbox
+# ID del webhook (panel de PayPal > Webhooks). Sin él se rechazan las
+# notificaciones: el retorno del navegador igual activa el plan.
+PAYPAL_WEBHOOK_ID=
+
 # Cuentas con acceso completo, separadas por coma
 ADMIN_EMAILS=
 

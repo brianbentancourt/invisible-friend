@@ -56,6 +56,28 @@ export const PLANS = {
 
 export const PAID_PLANS = ['premium', 'business'];
 
+/**
+ * Pasarelas de pago. MercadoPago cobra en UYU y es lo natural en LatAm; PayPal
+ * cobra en USD y existe para el resto del mundo, donde MercadoPago no se conoce
+ * y pagar en pesos uruguayos genera desconfianza (o directamente no funciona).
+ */
+export const PAYMENT_PROVIDERS = {
+    mercadopago: {
+        id: 'mercadopago',
+        currency: 'UYU',
+    },
+    paypal: {
+        id: 'paypal',
+        currency: 'USD',
+    },
+};
+
+export const DEFAULT_PAYMENT_PROVIDER = 'mercadopago';
+
+// El client id de PayPal es público por diseño, así que sirve como bandera de
+// "PayPal está configurado" en el cliente sin exponer nada sensible.
+export const PAYPAL_ENABLED = Boolean(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
+
 export const DONATION_LINKS = {
     buymeacoffee: 'https://buymeacoffee.com/brianbent',
     paypal: 'https://www.paypal.com/donate/?hosted_button_id=LRFX7GE2YG3JU',
