@@ -1,6 +1,6 @@
-# Amigo Invisible
+# Secret Santa (Amigo Invisible)
 
-Sorteo de Amigo Invisible / Amigo Secreto / Secret Santa / Amigo Oculto online.
+Sorteo de Secret Santa / Amigo Invisible / Amigo Secreto / Amigo Oculto online.
 El organizador carga la lista, define exclusiones y cada participante recibe un
 enlace secreto individual: nadie —ni siquiera quien organiza— ve las asignaciones
 del resto.
