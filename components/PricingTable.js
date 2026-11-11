@@ -125,16 +125,16 @@ export default function PricingTable() {
                 {tiers.map((tier) => (
                     <Card
                         key={tier.id}
-                        className={`border h-full ${
+                        className={`border h-full overflow-hidden ${
                             tier.highlight
-                                ? 'border-primary/50 bg-primary/5 shadow-lg md:scale-[1.03]'
+                                ? 'border-primary/50 bg-primary/5 shadow-lg md:scale-[1.02]'
                                 : 'border-default-200 bg-default-50/50'
                         }`}
                     >
-                        <CardBody className="p-8 flex flex-col gap-6">
+                        <CardBody className="p-6 sm:p-7 lg:p-8 flex flex-col gap-6 overflow-hidden overflow-x-hidden">
                             <div>
-                                <div className="flex items-center justify-between gap-2 mb-2">
-                                    <h3 className="text-xl font-bold">{tier.name}</h3>
+                                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                                    <h3 className="text-xl font-bold min-w-0">{tier.name}</h3>
                                     {tier.highlight && (
                                         <Chip color="primary" size="sm" variant="flat">
                                             {t('pricing.popular')}
@@ -159,7 +159,7 @@ export default function PricingTable() {
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-default-400 text-xs mt-1">
+                                <p className="text-default-400 text-xs mt-1 break-words">
                                     {tier.price === 0
                                         ? t('pricing.free_forever')
                                         : `≈ ${isPaypal ? `UYU ${tier.price}` : `USD ${tier.priceUsd}`} · ${t(
@@ -168,11 +168,11 @@ export default function PricingTable() {
                                 </p>
                             </div>
 
-                            <ul className="flex flex-col gap-3 flex-1">
+                            <ul className="flex flex-col gap-3 flex-1 min-w-0">
                                 {(Array.isArray(tier.features) ? tier.features : []).map((feature) => (
-                                    <li key={feature} className="flex gap-2 text-sm text-default-600">
+                                    <li key={feature} className="flex gap-2 text-sm text-default-600 min-w-0">
                                         <Check />
-                                        <span>{feature}</span>
+                                        <span className="min-w-0 break-words">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -180,7 +180,7 @@ export default function PricingTable() {
                             <Button
                                 color={tier.highlight ? 'primary' : 'default'}
                                 variant={tier.highlight ? 'shadow' : 'flat'}
-                                className="font-semibold w-full"
+                                className="font-semibold w-full mt-auto"
                                 isLoading={loadingPlan === tier.id}
                                 onPress={tier.onPress}
                             >

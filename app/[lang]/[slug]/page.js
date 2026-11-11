@@ -131,7 +131,7 @@ export default async function ContentPage({ params }) {
                 <JsonLd key={index} data={schema} />
             ))}
 
-            <main className="container mx-auto px-6 max-w-3xl pt-16 pb-24">
+            <main className={`container mx-auto px-6 ${page.showPricing ? 'max-w-5xl' : 'max-w-3xl'} pt-16 pb-24`}>
                 <nav className="text-sm text-default-400 mb-6">
                     <Link href={`/${locale}`} className="hover:text-primary transition-colors">
                         {SITE_NAME}
