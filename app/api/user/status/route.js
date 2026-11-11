@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/config/firebase-admin';
+import { getSession } from '@/lib/auth';
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'brianbentancourt9@gmail.com')
     .split(',')
@@ -8,10 +9,11 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'brianbentancourt9@gmail.com')
 
 export async function POST(request) {
     try {
-        const { userEmail } = await request.json();
+        const session = await getSession(request);
+        const userEmail = session?.email;
 
         if (!userEmail) {
-            return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
+            return NextResponse.json({ isPremium: false, plan: 'free' });
         }
 
         // Cuentas de administración con acceso completo.

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button, Input, Textarea } from "@nextui-org/react";
 import { useLanguage } from '@/components/LanguageProvider';
 import { toast } from 'react-toastify';
@@ -10,35 +10,52 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [wishlist, setWishlist] = useState('');
+    const nameInputRef = useRef(null);
     const { t } = useLanguage();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!name) {
+        const trimmedName = name.trim();
+        const trimmedEmail = email.trim();
+        const trimmedPhone = phone.trim();
+
+        if (!trimmedName) {
             toast.error(t('participant_form.error_no_name'));
             return;
         }
-        if (!email && !phone) {
+        if (!trimmedEmail && !trimmedPhone) {
             toast.error(t('participant_form.error_no_contact'));
             return;
         }
-        onAddParticipant({ name, email, phone, wishlist });
+        onAddParticipant({
+            name: trimmedName,
+            email: trimmedEmail,
+            phone: trimmedPhone,
+            wishlist: wishlist.trim(),
+        });
         setName('');
         setEmail('');
         setPhone('');
         setWishlist('');
-        track(EVENTS.PARTICIPANT_ADDED, { has_wishlist: Boolean(wishlist) });
+        track(EVENTS.PARTICIPANT_ADDED, { has_wishlist: Boolean(wishlist.trim()) });
         toast.success(t('participant_form.success'));
+
+        // Mantener el foco en el campo de nombre para cargar el siguiente rápidamente
+        setTimeout(() => {
+            nameInputRef.current?.focus();
+        }, 50);
     };
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
+                ref={nameInputRef}
                 label={t('participant_form.name')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 isDisabled={isDisabled}
                 required
+                autoComplete="name"
             />
             <Input
                 label={t('participant_form.email')}
@@ -46,6 +63,7 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 isDisabled={isDisabled}
+                autoComplete="email"
             />
             <Input
                 label={t('participant_form.phone')}
@@ -53,6 +71,7 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 isDisabled={isDisabled}
+                autoComplete="tel"
             />
             {/* La lista de deseos viaja con el enlace secreto: es lo que hace que
                 el regalo se acierte y lo que alimenta las ideas de regalo. */}
@@ -64,7 +83,7 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
                 minRows={2}
                 isDisabled={isDisabled}
             />
-            <Button type="submit" color="primary" isDisabled={isDisabled}>
+            <Button type="submit" color="primary" isDisabled={isDisabled} className="font-semibold">
                 {t('participant_form.add')}
             </Button>
         </form>

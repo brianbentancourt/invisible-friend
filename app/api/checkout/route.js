@@ -10,6 +10,7 @@ import {
     localeFromParam,
 } from '@/config/site';
 import { createOrder, buildCustomId, isPaypalConfigured } from '@/lib/paypal';
+import { getSession } from '@/lib/auth';
 
 const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || '' });
 
@@ -92,16 +93,18 @@ async function paypalCheckout({ plan, locale, userEmail }) {
 
 export async function POST(request) {
     try {
+        const session = await getSession(request);
+        if (!session?.email) {
+            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+        }
+
         const {
-            userEmail,
             plan = 'premium',
             lang,
             provider = DEFAULT_PAYMENT_PROVIDER,
         } = await request.json();
 
-        if (!userEmail) {
-            return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
-        }
+        const userEmail = session.email;
 
         if (!PAID_PLANS.includes(plan)) {
             return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { adminDb } from '@/config/firebase-admin';
 import { getDictionary } from '@/lib/i18n';
 import { localeFromParam, FREE_PARTICIPANT_LIMIT } from '@/config/site';
+import { getSession } from '@/lib/auth';
 import {
     sendEmail,
     sendWhatsApp,
@@ -18,7 +19,7 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'brianbentancourt9@gmail.com')
 
 function generateLogContent(assignments) {
     const logContent = assignments
-        .map(({ giver, receiver }) => `${giver.name} (${giver.email}) -> ${receiver.name} (${receiver.email})`)
+        .map(({ giver, receiver }) => `${giver.name} (${giver.email || giver.phone || 'Sin contacto'}) -> ${receiver.name} (${receiver.email || receiver.phone || 'Sin contacto'})`)
         .join('\n');
 
     return (
@@ -35,55 +36,63 @@ function generateValidAssignments(participants) {
     const n = participants.length;
     if (n < 2) return null;
 
-    let attempts = 0;
-    const maxAttempts = 100; // Evitar bucle infinito
+    // Backtracking con heurística Most Constrained Variable (quien tiene más exclusiones va primero)
+    // y barajado aleatorio para garantizar una distribución equiprobable y sin bloqueos.
+    for (let attempt = 0; attempt < 30; attempt++) {
+        const givers = participants.map((p, idx) => ({ ...p, originalIndex: idx }));
+        
+        // Ordenar por cantidad de exclusiones descendente + pequeño ruido aleatorio
+        givers.sort((a, b) => ((b.exclusions?.length || 0) - (a.exclusions?.length || 0)) || (Math.random() - 0.5));
 
-    while (attempts < maxAttempts) {
-        attempts++;
+        const assignedReceivers = new Set();
+        const assignments = new Array(n);
 
-        let availableReceivers = Array.from({ length: n }, (_, i) => i);
-        let assignments = new Array(n).fill(-1);
-        let success = true;
+        function backtrack(idx) {
+            if (idx === n) return true;
 
-        for (let giver = 0; giver < n; giver++) {
-            const giverParticipant = participants[giver];
-            const giverExclusions = giverParticipant.exclusions || [];
+            const giver = givers[idx];
+            const exclusions = new Set(giver.exclusions || []);
 
-            let validReceivers = availableReceivers.filter((r) => {
-                const receiverParticipant = participants[r];
-                const isSelf = r === giver;
-                const isExcluded = giverExclusions.includes(receiverParticipant.id);
-                return !isSelf && !isExcluded;
-            });
+            let candidates = participants
+                .map((p, i) => i)
+                .filter((i) => {
+                    const receiver = participants[i];
+                    return receiver.id !== giver.id && !exclusions.has(receiver.id) && !assignedReceivers.has(i);
+                });
 
-            if (validReceivers.length === 0) {
-                success = false;
-                break;
+            // Barajar candidatos aleatoriamente
+            for (let i = candidates.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
             }
 
-            const randomIndex = Math.floor(Math.random() * validReceivers.length);
-            const receiver = validReceivers[randomIndex];
+            for (const candIdx of candidates) {
+                assignedReceivers.add(candIdx);
+                assignments[giver.originalIndex] = participants[candIdx];
 
-            assignments[giver] = receiver;
-            availableReceivers = availableReceivers.filter((r) => r !== receiver);
+                if (backtrack(idx + 1)) return true;
+
+                assignedReceivers.delete(candIdx);
+            }
+
+            return false;
         }
 
-        if (success) {
-            // No forzamos un ciclo único: con muchas exclusiones puede ser imposible.
-            // Con success === true ya está garantizado que todos regalan y reciben.
-            return assignments.map((receiverIndex, giverIndex) => ({
-                giver: participants[giverIndex],
-                receiver: participants[receiverIndex],
+        if (backtrack(0)) {
+            return participants.map((giver, idx) => ({
+                giver,
+                receiver: assignments[idx],
             }));
         }
     }
 
-    throw new Error('No se pudo generar una asignación válida después de varios intentos');
+    throw new Error('No se pudo generar una asignación válida con las exclusiones actuales');
 }
 
 export async function POST(request) {
     try {
-        const { participants, userEmail, lang, event } = await request.json();
+        const session = await getSession(request);
+        const { participants, lang, event } = await request.json();
         const locale = localeFromParam(lang);
         const dict = getDictionary(locale);
 
@@ -91,11 +100,12 @@ export async function POST(request) {
             return NextResponse.json({ error: dict.dashboard.errors.min_participants }, { status: 400 });
         }
 
-        // El sorteo requiere sesión: es lo que nos permite enviar las
-        // notificaciones y asociar el resultado a una cuenta.
-        if (!userEmail) {
+        // El sorteo requiere sesión autenticada verificada por token
+        if (!session?.email) {
             return NextResponse.json({ error: dict.dashboard.login_required }, { status: 401 });
         }
+
+        const userEmail = session.email;
 
         // Verificar estado Premium
         let isPremium = ADMIN_EMAILS.includes(userEmail.toLowerCase());
@@ -153,9 +163,9 @@ export async function POST(request) {
                 });
 
                 const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
-                    sendEmail(giver.email, subject, message, html),
-                    sendWhatsApp(giver.phone, message),
-                    isPremium ? sendSMS(giver.phone, message) : Promise.resolve(false),
+                    giver.email ? sendEmail(giver.email, subject, message, html) : Promise.resolve(false),
+                    giver.phone ? sendWhatsApp(giver.phone, message) : Promise.resolve(false),
+                    isPremium && giver.phone ? sendSMS(giver.phone, message) : Promise.resolve(false),
                 ]);
 
                 return {
@@ -192,8 +202,6 @@ export async function POST(request) {
             await drawRef.set(drawData);
         } catch (dbError) {
             console.error('Error guardando en Firestore:', dbError);
-            // El sorteo ya se envió; no lo abortamos, pero sin persistencia
-            // los enlaces no funcionarían, así que lo reportamos.
             return NextResponse.json({ error: dict.dashboard.errors.draw_error }, { status: 500 });
         }
 
@@ -214,6 +222,6 @@ export async function POST(request) {
         });
     } catch (error) {
         console.error('Error en el sorteo:', error);
-        return NextResponse.json({ error: 'Error al realizar el sorteo' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Error al realizar el sorteo' }, { status: 500 });
     }
 }

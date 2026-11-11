@@ -39,11 +39,13 @@ function SignIn() {
     const redirectAfterLogin = () => {
         // Volvemos a donde el usuario quería ir; por defecto, a su sorteo.
         const next = searchParams.get('next');
+        const action = searchParams.get('action');
         if (next === 'pricing' && links.pricing) {
             router.push(`/${locale}/${links.pricing.slug}`);
             return;
         }
-        router.push(`/${locale}/dashboard`);
+        const actionQuery = action ? `?action=${action}` : '';
+        router.push(`/${locale}/dashboard${actionQuery}`);
     };
 
     const signIn = async (provider, providerName) => {

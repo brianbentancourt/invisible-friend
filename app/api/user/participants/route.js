@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/config/firebase-admin';
+import { getSession } from '@/lib/auth';
 
 export async function GET(request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const userEmail = searchParams.get('email');
-
-        if (!userEmail) {
-            return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
+        const session = await getSession(request);
+        if (!session?.email) {
+            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
 
-        const userDoc = await adminDb.collection('users').doc(userEmail).get();
+        const userDoc = await adminDb.collection('users').doc(session.email).get();
         
         if (userDoc.exists) {
             const data = userDoc.data();
@@ -26,13 +25,18 @@ export async function GET(request) {
 
 export async function POST(request) {
     try {
-        const { userEmail, participants } = await request.json();
-
-        if (!userEmail || !Array.isArray(participants)) {
-            return NextResponse.json({ error: 'Email y participants son requeridos' }, { status: 400 });
+        const session = await getSession(request);
+        if (!session?.email) {
+            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
 
-        await adminDb.collection('users').doc(userEmail).set(
+        const { participants } = await request.json();
+
+        if (!Array.isArray(participants)) {
+            return NextResponse.json({ error: 'Participants debe ser un array' }, { status: 400 });
+        }
+
+        await adminDb.collection('users').doc(session.email).set(
             { participants },
             { merge: true }
         );

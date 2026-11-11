@@ -2,7 +2,19 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import NextLink from 'next/link';
-import { Button, Card, CardBody, Input, Textarea, Chip } from '@nextui-org/react';
+import {
+    Button,
+    Card,
+    CardBody,
+    Input,
+    Textarea,
+    Chip,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+} from '@nextui-org/react';
 import ParticipantForm from '@/components/ParticipantForm';
 import ParticipantList from '@/components/ParticipantList';
 import { useAuth } from '@/components/AuthProvider';
@@ -41,6 +53,11 @@ function Dashboard() {
     const [plan, setPlan] = useState('free');
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
     const [paymentProvider, setPaymentProvider] = useState(DEFAULT_PAYMENT_PROVIDER);
+    const [isSpoilerModalOpen, setIsSpoilerModalOpen] = useState(false);
+    const [pastDraws, setPastDraws] = useState([]);
+    const [isPastDrawsOpen, setIsPastDrawsOpen] = useState(false);
+    const [lastRemoved, setLastRemoved] = useState(null);
+
     const { user, loading: authLoading } = useAuth();
     const { t, locale } = useLanguage();
     const router = useRouter();
@@ -49,6 +66,8 @@ function Dashboard() {
 
     const isGuest = !authLoading && !user;
     const limitReached = !isPremium && participants.length >= FREE_PARTICIPANT_LIMIT;
+    const actionParam = searchParams.get('action');
+    const showResumeBanner = actionParam === 'draw' && user?.email && !drawResults && participants.length >= 2;
 
     // Avisar del resultado del pago cuando MercadoPago devuelve al usuario.
     useEffect(() => {
@@ -72,8 +91,6 @@ function Dashboard() {
     }, []);
 
     useEffect(() => {
-        // La lista local es la fuente de arranque en ambos casos: así el modo
-        // invitado funciona y quien inicia sesión no pierde lo que ya cargó.
         const localData = localStorage.getItem(STORAGE_KEY);
         if (localData) {
             try {
@@ -108,15 +125,24 @@ function Dashboard() {
             })
             .catch(console.error);
 
-        fetch(`/api/user/participants?email=${encodeURIComponent(user.email)}`)
+        fetch(`/api/user/participants`)
             .then((res) => res.json())
             .then((data) => {
-                // Sólo pisamos la lista local si la nube tiene datos: si el
-                // usuario acaba de cargar gente como invitado, se conserva.
+                // Sólo pisamos la lista local si la nube tiene datos y local está vacía
                 if (data.participants?.length > 0) {
                     const localData = localStorage.getItem(STORAGE_KEY);
                     const local = localData ? JSON.parse(localData) : [];
                     if (local.length === 0) setParticipants(data.participants);
+                }
+            })
+            .catch(console.error);
+
+        // Cargar historial de sorteos del organizador
+        fetch('/api/user/draws')
+            .then((res) => res.json())
+            .then((data) => {
+                if (Array.isArray(data.draws)) {
+                    setPastDraws(data.draws);
                 }
             })
             .catch(console.error);
@@ -133,7 +159,6 @@ function Dashboard() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            userEmail: user.email,
                             participants: newParticipants,
                         }),
                     });
@@ -159,7 +184,7 @@ function Dashboard() {
         });
 
         if (!user?.email) {
-            router.push(`/${locale}/auth/signin`);
+            router.push(`/${locale}/auth/signin?next=dashboard`);
             return;
         }
 
@@ -169,7 +194,6 @@ function Dashboard() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userEmail: user.email,
                     plan: selectedPlan,
                     lang: locale,
                     provider: paymentProvider,
@@ -201,7 +225,29 @@ function Dashboard() {
     };
 
     const handleRemoveParticipant = (id) => {
-        saveParticipants(participants.filter((p) => p.id !== id));
+        const removed = participants.find((p) => p.id === id);
+        const next = participants.filter((p) => p.id !== id);
+        setLastRemoved(removed);
+        saveParticipants(next);
+
+        if (removed) {
+            toast.info(
+                <div className="flex items-center justify-between gap-3">
+                    <span>{t('participant_list.deleted')}</span>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            saveParticipants([...next, removed]);
+                            setLastRemoved(null);
+                        }}
+                        className="underline font-bold text-primary hover:opacity-80"
+                    >
+                        {t('participant_list.undo')}
+                    </button>
+                </div>,
+                { autoClose: 5000 }
+            );
+        }
     };
 
     const handleDraw = async () => {
@@ -215,7 +261,7 @@ function Dashboard() {
         if (!user?.email) {
             toast.info(t('dashboard.login_required'));
             track(EVENTS.SIGNUP_START, { source: 'draw_gate' });
-            router.push(`/${locale}/auth/signin`);
+            router.push(`/${locale}/auth/signin?next=dashboard&action=draw`);
             return;
         }
 
@@ -224,7 +270,7 @@ function Dashboard() {
             const response = await fetch('/api/draw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ participants, userEmail: user.email, lang: locale, event }),
+                body: JSON.stringify({ participants, lang: locale, event }),
             });
 
             const data = await response.json();
@@ -245,7 +291,7 @@ function Dashboard() {
         }
     };
 
-    const handleRetry = async (participantEmail) => {
+    const handleRetry = async (participantId, participantEmail) => {
         if (!drawId) return;
 
         const toastId = toast.loading(t('dashboard.errors.retrying'));
@@ -253,7 +299,7 @@ function Dashboard() {
             const response = await fetch('/api/draw/retry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ drawId, participantEmail }),
+                body: JSON.stringify({ drawId, participantId, participantEmail }),
             });
 
             const data = await response.json();
@@ -264,7 +310,10 @@ function Dashboard() {
 
             setDrawResults((prevResults) =>
                 prevResults.map((r) =>
-                    r.participant.email === participantEmail ? { ...r, status: data.status } : r
+                    (participantId && r.participant.id === participantId) ||
+                    (participantEmail && r.participant.email === participantEmail)
+                        ? { ...r, status: data.status }
+                        : r
                 )
             );
 
@@ -298,7 +347,9 @@ function Dashboard() {
     };
 
     const handleDownloadLog = () => {
-        if (drawLog) downloadFile(drawLog, 'log', 'text/plain');
+        if (drawLog) {
+            downloadFile(drawLog, 'log', 'text/plain');
+        }
     };
 
     const handleExportCsv = () => {
@@ -322,12 +373,112 @@ function Dashboard() {
 
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
+            {/* Modal de confirmación anti-spoilers al descargar log */}
+            <Modal
+                isOpen={isSpoilerModalOpen}
+                onOpenChange={setIsSpoilerModalOpen}
+                placement="center"
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="text-warning font-bold flex items-center gap-2">
+                                {t('dashboard.spoiler_warning_title')}
+                            </ModalHeader>
+                            <ModalBody className="text-default-600 text-sm leading-relaxed">
+                                {t('dashboard.spoiler_warning_desc')}
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="flat" onPress={onClose}>
+                                    {t('dashboard.spoiler_cancel')}
+                                </Button>
+                                <Button
+                                    color="warning"
+                                    onPress={() => {
+                                        onClose();
+                                        handleDownloadLog();
+                                    }}
+                                >
+                                    {t('dashboard.spoiler_confirm')}
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+
+            {/* Modal de Historial de Sorteos */}
+            <Modal
+                isOpen={isPastDrawsOpen}
+                onOpenChange={setIsPastDrawsOpen}
+                placement="center"
+                size="2xl"
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="font-bold">
+                                {t('dashboard.past_draws_title')}
+                            </ModalHeader>
+                            <ModalBody className="max-h-[60vh] overflow-y-auto">
+                                {pastDraws.length === 0 ? (
+                                    <p className="text-default-400 text-sm py-4 text-center">
+                                        {t('dashboard.past_draws_empty')}
+                                    </p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {pastDraws.map((d) => (
+                                            <div
+                                                key={d.id}
+                                                className="p-4 rounded-xl border border-default-100 bg-default-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                            >
+                                                <div>
+                                                    <h4 className="font-bold text-sm">
+                                                        {d.event?.name || 'Amigo Invisible'}
+                                                    </h4>
+                                                    <p className="text-xs text-default-400 mt-1">
+                                                        📅 {new Date(d.timestamp).toLocaleDateString()} ·{' '}
+                                                        {t('dashboard.past_draws_count', {
+                                                            count: d.participantCount,
+                                                        })}
+                                                    </p>
+                                                </div>
+                                                <Chip size="sm" variant="flat" color="primary">
+                                                    ID: {d.id.slice(0, 8)}...
+                                                </Chip>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="flat" onPress={onClose}>
+                                    Cerrar
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
-                    <span className={`text-sm ${isPremium ? 'font-semibold text-warning' : 'text-default-500'}`}>
-                        {planLabel}
-                    </span>
+                    <div className="flex items-center gap-3 mt-1">
+                        <span className={`text-sm ${isPremium ? 'font-semibold text-warning' : 'text-default-500'}`}>
+                            {planLabel}
+                        </span>
+                        {user?.email && pastDraws.length > 0 && (
+                            <Button
+                                size="sm"
+                                variant="light"
+                                className="text-xs text-primary font-medium p-0 h-auto"
+                                onPress={() => setIsPastDrawsOpen(true)}
+                            >
+                                {t('dashboard.past_draws_btn')} ({pastDraws.length})
+                            </Button>
+                        )}
+                    </div>
                 </div>
                 <div className="flex gap-3 items-center flex-wrap">
                     {!isPremium && (
@@ -352,6 +503,31 @@ function Dashboard() {
                 </div>
             </div>
 
+            {/* Banner de reanudación automática tras iniciar sesión */}
+            {showResumeBanner && (
+                <Card className="mb-6 border border-success/40 bg-success/10">
+                    <CardBody className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                        <div>
+                            <h2 className="font-bold text-success-600 mb-1">
+                                {t('dashboard.resume_draw_title')}
+                            </h2>
+                            <p className="text-sm text-default-600">
+                                {t('dashboard.resume_draw_desc')}
+                            </p>
+                        </div>
+                        <Button
+                            color="success"
+                            variant="shadow"
+                            className="shrink-0 font-bold text-white"
+                            isLoading={isLoading}
+                            onPress={handleDraw}
+                        >
+                            {t('dashboard.resume_draw_action')}
+                        </Button>
+                    </CardBody>
+                </Card>
+            )}
+
             {/* Modo invitado: se puede cargar todo sin cuenta y el login se pide al sortear */}
             {isGuest && (
                 <Card className="mb-6 border border-primary/30 bg-primary/5">
@@ -362,7 +538,7 @@ function Dashboard() {
                         </div>
                         <Button
                             as={NextLink}
-                            href={`/${locale}/auth/signin`}
+                            href={`/${locale}/auth/signin?next=dashboard`}
                             color="primary"
                             variant="flat"
                             className="shrink-0 font-semibold"
@@ -485,7 +661,11 @@ function Dashboard() {
                                 <h3 className="font-bold mb-1">{t('dashboard.results_title')}</h3>
                                 <p className="text-sm text-default-500 mb-4">{t('dashboard.results_desc')}</p>
                                 <div className="flex gap-3 flex-wrap">
-                                    <Button color="primary" variant="flat" onPress={handleDownloadLog}>
+                                    <Button
+                                        color="primary"
+                                        variant="flat"
+                                        onPress={() => setIsSpoilerModalOpen(true)}
+                                    >
                                         {t('dashboard.download_log')}
                                     </Button>
                                     {isPremium && (
@@ -500,7 +680,6 @@ function Dashboard() {
                                             setDrawResults(null);
                                             setDrawId(null);
                                             setDrawLog(null);
-                                            // Conservamos los participantes para reutilizarlos
                                         }}
                                     >
                                         {t('dashboard.new_draw')}

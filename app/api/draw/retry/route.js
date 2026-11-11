@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb } from '@/config/firebase-admin';
 import { getDictionary } from '@/lib/i18n';
 import { localeFromParam } from '@/config/site';
+import { getSession } from '@/lib/auth';
 import {
     sendEmail,
     sendWhatsApp,
@@ -10,12 +11,22 @@ import {
     buildEmailHtml,
 } from '@/lib/notifications';
 
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'brianbentancourt9@gmail.com')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+
 export async function POST(request) {
     try {
-        const { drawId, participantEmail } = await request.json();
+        const session = await getSession(request);
+        if (!session?.email) {
+            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+        }
 
-        if (!drawId || !participantEmail) {
-            return NextResponse.json({ error: 'Missing drawId or participantEmail' }, { status: 400 });
+        const { drawId, participantId, participantEmail } = await request.json();
+
+        if (!drawId || (!participantId && !participantEmail)) {
+            return NextResponse.json({ error: 'Missing drawId or participant identifier' }, { status: 400 });
         }
 
         const drawRef = adminDb.collection('draws').doc(drawId);
@@ -26,11 +37,20 @@ export async function POST(request) {
         }
 
         const drawData = doc.data();
+
+        // Verificar que el usuario sea el organizador o admin
+        const isOrganizer = drawData.organizerEmail?.toLowerCase() === session.email.toLowerCase();
+        const isAdmin = ADMIN_EMAILS.includes(session.email.toLowerCase());
+        if (!isOrganizer && !isAdmin) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+        }
+
         const locale = localeFromParam(drawData.locale);
         const dict = getDictionary(locale);
 
+        // Buscar por id primero, luego por email
         const participantEntryIndex = drawData.results.findIndex(
-            (r) => r.giver.email === participantEmail
+            (r) => (participantId && r.giver.id === participantId) || (participantEmail && r.giver.email === participantEmail)
         );
 
         if (participantEntryIndex === -1) {
@@ -48,17 +68,17 @@ export async function POST(request) {
         const currentStatus = entry.status;
         const newStatus = { ...currentStatus };
 
-        // Sólo reintentamos los canales que fallaron, para no duplicar avisos.
-        if (!currentStatus.email) {
+        // Sólo reintentamos los canales que fallaron y donde haya contacto
+        if (!currentStatus.email && giver.email) {
             const html = buildEmailHtml({ text: message, url, ctaLabel: dict.reveal.reveal_btn });
             newStatus.email = await sendEmail(giver.email, dict.api.email_subject, message, html);
         }
 
-        if (!currentStatus.whatsapp) {
+        if (!currentStatus.whatsapp && giver.phone) {
             newStatus.whatsapp = await sendWhatsApp(giver.phone, message);
         }
 
-        if (!currentStatus.sms) {
+        if (!currentStatus.sms && giver.phone) {
             newStatus.sms = await sendSMS(giver.phone, message);
         }
 
