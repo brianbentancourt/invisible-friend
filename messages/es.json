@@ -196,6 +196,7 @@
     "resume_draw_action": "🎲 Sortear ahora",
     "errors": {
       "min_participants": "Se necesitan al menos 2 participantes",
+      "min_active_participants": "Se necesitan al menos 2 participantes activos para realizar el sorteo",
       "draw_success": "¡Sorteo realizado con éxito! Las notificaciones han sido enviadas.",
       "draw_error": "Error al realizar el sorteo",
       "payment_init_error": "Error al iniciar el pago",
@@ -221,6 +222,7 @@
     "success": "Participante agregado correctamente"
   },
   "participant_list": {
+    "col_select": "PARTICIPA",
     "col_name": "NOMBRE",
     "col_phone": "TELÉFONO",
     "col_email": "EMAIL",
@@ -238,6 +240,11 @@
     "sent": "Enviado",
     "failed": "Falló",
     "whatsapp_message": "¡Hola! Ya hice el sorteo del Amigo Invisible 🎁\n\nEntra a este enlace secreto para ver a quién te toca regalar:\n{url}\n\n¡No le digas a nadie! 🤫",
+    "active": "Participa",
+    "paused": "En pausa",
+    "select_all": "Seleccionar todos",
+    "deselect_all": "Pausar todos",
+    "did_not_participate": "Pausado (no participó)",
     "edit": "Editar",
     "delete": "Eliminar",
     "edit_title": "Editar participante",

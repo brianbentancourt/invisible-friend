@@ -65,9 +65,10 @@ function Dashboard() {
     const links = getNavLinks(locale);
 
     const isGuest = !authLoading && !user;
-    const limitReached = !isPremium && participants.length >= FREE_PARTICIPANT_LIMIT;
+    const activeParticipants = participants.filter((p) => p.active !== false);
+    const limitReached = !isPremium && activeParticipants.length >= FREE_PARTICIPANT_LIMIT;
     const actionParam = searchParams.get('action');
-    const showResumeBanner = actionParam === 'draw' && user?.email && !drawResults && participants.length >= 2;
+    const showResumeBanner = actionParam === 'draw' && user?.email && !drawResults && activeParticipants.length >= 2;
 
     // Avisar del resultado del pago cuando MercadoPago devuelve al usuario.
     useEffect(() => {
@@ -216,8 +217,12 @@ function Dashboard() {
     const handleAddParticipant = (participant) => {
         saveParticipants([
             ...participants,
-            { ...participant, id: crypto.randomUUID(), exclusions: [] },
+            { ...participant, id: crypto.randomUUID(), exclusions: [], active: true },
         ]);
+    };
+
+    const handleToggleAllParticipants = (active) => {
+        saveParticipants(participants.map((p) => ({ ...p, active })));
     };
 
     const handleUpdateParticipant = (id, updates) => {
@@ -251,8 +256,8 @@ function Dashboard() {
     };
 
     const handleDraw = async () => {
-        if (participants.length < 2) {
-            toast.error(t('dashboard.errors.min_participants'));
+        if (activeParticipants.length < 2) {
+            toast.error(t('dashboard.errors.min_active_participants') || t('dashboard.errors.min_participants'));
             return;
         }
 
@@ -270,7 +275,7 @@ function Dashboard() {
             const response = await fetch('/api/draw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ participants, lang: locale, event }),
+                body: JSON.stringify({ participants: activeParticipants, lang: locale, event }),
             });
 
             const data = await response.json();
@@ -630,8 +635,8 @@ function Dashboard() {
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">{t('dashboard.participants')}</h2>
                             <span className="text-sm text-default-500 bg-default-100 px-3 py-1 rounded-full">
-                                {participants.length}
-                                {!isPremium && ` / ${FREE_PARTICIPANT_LIMIT}`} {t('dashboard.people')}
+                                {activeParticipants.length} / {participants.length} {t('dashboard.people')}
+                                {!isPremium && ` (Máx ${FREE_PARTICIPANT_LIMIT})`}
                             </span>
                         </div>
 
@@ -642,9 +647,10 @@ function Dashboard() {
                             onRetry={handleRetry}
                             onUpdateParticipant={handleUpdateParticipant}
                             onRemoveParticipant={handleRemoveParticipant}
+                            onToggleAll={handleToggleAllParticipants}
                         />
 
-                        {participants.length >= 2 && !drawResults && (
+                        {activeParticipants.length >= 2 && !drawResults && (
                             <Button
                                 color="primary"
                                 size="lg"
@@ -652,7 +658,7 @@ function Dashboard() {
                                 onPress={handleDraw}
                                 isLoading={isLoading}
                             >
-                                {isLoading ? t('dashboard.drawing') : `🎲 ${t('dashboard.draw_button')}`}
+                                {isLoading ? t('dashboard.drawing') : `🎲 ${t('dashboard.draw_button')} (${activeParticipants.length})`}
                             </Button>
                         )}
 

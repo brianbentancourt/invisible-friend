@@ -196,6 +196,7 @@
     "resume_draw_action": "🎲 Run draw now",
     "errors": {
       "min_participants": "At least 2 participants are required",
+      "min_active_participants": "At least 2 active participants are required to run the draw",
       "draw_success": "Draw completed successfully! Notifications have been sent.",
       "draw_error": "Error running the draw",
       "payment_init_error": "Error initializing payment",
@@ -221,6 +222,7 @@
     "success": "Participant added successfully"
   },
   "participant_list": {
+    "col_select": "PARTICIPATES",
     "col_name": "NAME",
     "col_phone": "PHONE",
     "col_email": "EMAIL",
@@ -238,6 +240,11 @@
     "sent": "Sent",
     "failed": "Failed",
     "whatsapp_message": "Hello! I just ran the Secret Santa draw 🎁\n\nEnter this secret link to see who you have to gift:\n{url}\n\nDon't tell anyone! 🤫",
+    "active": "Active",
+    "paused": "Paused",
+    "select_all": "Select all",
+    "deselect_all": "Pause all",
+    "did_not_participate": "Paused (did not participate)",
     "edit": "Edit",
     "delete": "Delete",
     "edit_title": "Edit participant",

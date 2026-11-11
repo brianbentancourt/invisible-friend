@@ -22,6 +22,7 @@ import {
     Chip,
     Card,
     CardBody,
+    Checkbox,
 } from "@nextui-org/react";
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -34,12 +35,18 @@ export default function ParticipantList({
     onRetry,
     onUpdateParticipant,
     onRemoveParticipant,
+    onToggleAll,
 }) {
     const { t, locale } = useLanguage();
     const [editingParticipant, setEditingParticipant] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', wishlist: '' });
 
+    const allActive = participants.length > 0 && participants.every((p) => p.active !== false);
+    const someActive = participants.some((p) => p.active !== false);
+    const isIndeterminate = someActive && !allActive;
+
     const columns = [
+        { key: "select", label: t('participant_list.col_select') },
         { key: "name", label: t('participant_list.col_name') },
         { key: "phone", label: t('participant_list.col_phone') },
         { key: "email", label: t('participant_list.col_email') },
@@ -152,27 +159,74 @@ export default function ParticipantList({
     const renderCell = (participant, columnKey) => {
         const result = getParticipantResult(participant);
         const status = result?.status;
+        const isPaused = participant.active === false;
 
         switch (columnKey) {
+            case "select":
+                if (drawResults) {
+                    return (
+                        <div className="flex justify-center">
+                            <span className="text-xs">{isPaused ? '⏸️' : '✅'}</span>
+                        </div>
+                    );
+                }
+                return (
+                    <div className="flex justify-center">
+                        <Tooltip content={!isPaused ? t('participant_list.active') : t('participant_list.paused')}>
+                            <div>
+                                <Checkbox
+                                    isSelected={!isPaused}
+                                    onValueChange={(val) => onUpdateParticipant(participant.id, { active: val })}
+                                    aria-label={`${t('participant_list.col_select')} ${participant.name}`}
+                                    size="sm"
+                                    color="primary"
+                                />
+                            </div>
+                        </Tooltip>
+                    </div>
+                );
             case "name":
-                return <span className="font-medium text-foreground">{participant.name}</span>;
+                return (
+                    <div className="flex items-center gap-2">
+                        <span className={`font-medium ${isPaused ? 'text-default-400 line-through' : 'text-foreground'}`}>
+                            {participant.name}
+                        </span>
+                        {isPaused && (
+                            <Chip size="sm" variant="flat" color="default" className="text-[10px] h-5">
+                                {t('participant_list.paused')}
+                            </Chip>
+                        )}
+                    </div>
+                );
             case "phone":
-                return participant.phone || <span className="text-default-300">—</span>;
+                return participant.phone ? (
+                    <span className={isPaused ? 'text-default-400' : ''}>{participant.phone}</span>
+                ) : (
+                    <span className="text-default-300">—</span>
+                );
             case "email":
-                return participant.email || <span className="text-default-300">—</span>;
+                return participant.email ? (
+                    <span className={isPaused ? 'text-default-400' : ''}>{participant.email}</span>
+                ) : (
+                    <span className="text-default-300">—</span>
+                );
             case "wishlist":
                 if (!participant.wishlist) return <span className="text-default-300">—</span>;
                 return (
                     <Tooltip content={participant.wishlist}>
-                        <span className="text-default-500 text-sm line-clamp-1 max-w-[160px] block cursor-help">
+                        <span className={`text-sm line-clamp-1 max-w-[160px] block cursor-help ${isPaused ? 'text-default-300' : 'text-default-500'}`}>
                             {participant.wishlist}
                         </span>
                     </Tooltip>
                 );
             case "exclusions":
                 if (drawResults) return <span className="text-default-400">-</span>;
+                if (isPaused) {
+                    return <span className="text-default-400 text-xs italic">{t('participant_list.paused')}</span>;
+                }
 
-                const otherParticipants = participants.filter((p) => p.id !== participant.id);
+                // Solo otros participantes activos
+                const otherActiveParticipants = participants.filter((p) => p.id !== participant.id && p.active !== false);
                 return (
                     <Select
                         selectionMode="multiple"
@@ -186,7 +240,7 @@ export default function ParticipantList({
                             onUpdateParticipant(participant.id, { exclusions: selectedIds });
                         }}
                     >
-                        {otherParticipants.map((p) => (
+                        {otherActiveParticipants.map((p) => (
                             <SelectItem key={p.id} textValue={p.name}>
                                 {p.name}
                             </SelectItem>
@@ -194,6 +248,9 @@ export default function ParticipantList({
                     </Select>
                 );
             case "notifications":
+                if (isPaused) {
+                    return <span className="text-default-400 text-xs italic">{t('participant_list.did_not_participate')}</span>;
+                }
                 if (!status) return <span className="text-default-400">{t('participant_list.pending')}</span>;
                 return (
                     <div className="flex gap-2">
@@ -234,6 +291,8 @@ export default function ParticipantList({
                         </div>
                     );
                 }
+
+                if (isPaused) return null;
 
                 const hasError = status && (!status.email || !status.whatsapp);
 
@@ -312,6 +371,21 @@ export default function ParticipantList({
 
             {/* Vista Mobile: Stack de Tarjetas adaptativas (< md) */}
             <div className="block md:hidden space-y-3">
+                {participants.length > 0 && !drawResults && (
+                    <div className="flex items-center justify-between px-1 text-xs text-default-500 mb-2">
+                        <span>
+                            {participants.filter((p) => p.active !== false).length} de {participants.length} activos
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => onToggleAll?.(!allActive)}
+                            className="text-primary hover:underline font-semibold"
+                        >
+                            {allActive ? t('participant_list.deselect_all') : t('participant_list.select_all')}
+                        </button>
+                    </div>
+                )}
+
                 {sortedParticipants.length === 0 ? (
                     <div className="text-center py-12 text-default-400">
                         {t('participant_list.empty')}
@@ -321,22 +395,49 @@ export default function ParticipantList({
                         const result = getParticipantResult(p);
                         const status = result?.status;
                         const hasError = status && (!status.email || !status.whatsapp);
-                        const otherParticipants = participants.filter((other) => other.id !== p.id);
+                        const isPaused = p.active === false;
+                        const otherActive = participants.filter((other) => other.id !== p.id && other.active !== false);
 
                         return (
-                            <Card key={p.id || idx} className="border border-default-200 bg-background/60 shadow-sm">
+                            <Card
+                                key={p.id || idx}
+                                className={`border transition-all ${
+                                    isPaused
+                                        ? 'border-default-100 bg-default-50/40 opacity-75'
+                                        : 'border-default-200 bg-background/60 shadow-sm'
+                                }`}
+                            >
                                 <CardBody className="p-4 flex flex-col gap-3">
                                     <div className="flex items-start justify-between gap-2">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
-                                                    {idx + 1}
-                                                </span>
-                                                <h3 className="font-bold text-base">{p.name}</h3>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 text-xs text-default-500 mt-1.5">
-                                                {p.phone && <span>📱 {p.phone}</span>}
-                                                {p.email && <span>📧 {p.email}</span>}
+                                        <div className="flex items-start gap-3">
+                                            {!drawResults ? (
+                                                <div className="pt-0.5">
+                                                    <Checkbox
+                                                        isSelected={!isPaused}
+                                                        onValueChange={(val) => onUpdateParticipant(p.id, { active: val })}
+                                                        aria-label={`${t('participant_list.col_select')} ${p.name}`}
+                                                        size="sm"
+                                                        color="primary"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs pt-0.5">{isPaused ? '⏸️' : '✅'}</span>
+                                            )}
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className={`font-bold text-base ${isPaused ? 'line-through text-default-400' : 'text-foreground'}`}>
+                                                        {p.name}
+                                                    </h3>
+                                                    {isPaused && (
+                                                        <Chip size="sm" variant="flat" color="default" className="text-[10px] h-5">
+                                                            {t('participant_list.paused')}
+                                                        </Chip>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 text-xs text-default-500 mt-1">
+                                                    {p.phone && <span>📱 {p.phone}</span>}
+                                                    {p.email && <span>📧 {p.email}</span>}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -372,7 +473,7 @@ export default function ParticipantList({
                                         </div>
                                     )}
 
-                                    {!drawResults && (
+                                    {!drawResults && !isPaused && (
                                         <div>
                                             <label className="text-xs font-semibold text-default-500 mb-1 block">
                                                 {t('participant_list.col_exclusions')}
@@ -388,7 +489,7 @@ export default function ParticipantList({
                                                     onUpdateParticipant(p.id, { exclusions: selectedIds });
                                                 }}
                                             >
-                                                {otherParticipants.map((other) => (
+                                                {otherActive.map((other) => (
                                                     <SelectItem key={other.id} textValue={other.name}>
                                                         {other.name}
                                                     </SelectItem>
@@ -399,33 +500,41 @@ export default function ParticipantList({
 
                                     {drawResults && (
                                         <div className="border-t border-default-100 pt-3 flex flex-col gap-2">
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="font-semibold text-default-500">
-                                                    {t('participant_list.col_notifications')}:
+                                            {isPaused ? (
+                                                <span className="text-default-400 text-xs italic">
+                                                    {t('participant_list.did_not_participate')}
                                                 </span>
-                                                {status ? (
-                                                    <div className="flex gap-2">
-                                                        <span>📧 {getStatusIcon(status.email)}</span>
-                                                        <span>📱 {getStatusIcon(status.whatsapp)}</span>
-                                                        <span>💬 {getStatusIcon(status.sms)}</span>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="font-semibold text-default-500">
+                                                            {t('participant_list.col_notifications')}:
+                                                        </span>
+                                                        {status ? (
+                                                            <div className="flex gap-2">
+                                                                <span>📧 {getStatusIcon(status.email)}</span>
+                                                                <span>📱 {getStatusIcon(status.whatsapp)}</span>
+                                                                <span>💬 {getStatusIcon(status.sms)}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-default-400">{t('participant_list.pending')}</span>
+                                                        )}
                                                     </div>
-                                                ) : (
-                                                    <span className="text-default-400">{t('participant_list.pending')}</span>
-                                                )}
-                                            </div>
 
-                                            <div className="flex flex-wrap gap-2 pt-1 items-center">
-                                                {hasError && (
-                                                    <Button
-                                                        size="sm"
-                                                        color="warning"
-                                                        onPress={() => onRetry(p.id, p.email)}
-                                                    >
-                                                        {t('participant_list.retry')}
-                                                    </Button>
-                                                )}
-                                                {renderShareButtons(p, result)}
-                                            </div>
+                                                    <div className="flex flex-wrap gap-2 pt-1 items-center">
+                                                        {hasError && (
+                                                            <Button
+                                                                size="sm"
+                                                                color="warning"
+                                                                onPress={() => onRetry(p.id, p.email)}
+                                                            >
+                                                                {t('participant_list.retry')}
+                                                            </Button>
+                                                        )}
+                                                        {renderShareButtons(p, result)}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </CardBody>
@@ -439,11 +548,37 @@ export default function ParticipantList({
             <div className="hidden md:block">
                 <Table aria-label="Lista de participantes" isStriped>
                     <TableHeader columns={columns}>
-                        {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
+                        {(column) => (
+                            <TableColumn
+                                key={column.key}
+                                align={column.key === "select" ? "center" : "start"}
+                                className={column.key === "select" ? "w-12 text-center" : ""}
+                            >
+                                {column.key === "select" && !drawResults ? (
+                                    <Tooltip content={allActive ? t('participant_list.deselect_all') : t('participant_list.select_all')}>
+                                        <div className="flex justify-center">
+                                            <Checkbox
+                                                isSelected={allActive}
+                                                isIndeterminate={isIndeterminate}
+                                                onValueChange={(val) => onToggleAll?.(val)}
+                                                aria-label={t('participant_list.select_all')}
+                                                size="sm"
+                                                color="primary"
+                                            />
+                                        </div>
+                                    </Tooltip>
+                                ) : (
+                                    column.label
+                                )}
+                            </TableColumn>
+                        )}
                     </TableHeader>
                     <TableBody items={sortedParticipants} emptyContent={t('participant_list.empty')}>
                         {(item) => (
-                            <TableRow key={item.id || item.email}>
+                            <TableRow
+                                key={item.id || item.email}
+                                className={item.active === false ? "opacity-60 bg-default-50/50" : ""}
+                            >
                                 {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                             </TableRow>
                         )}
