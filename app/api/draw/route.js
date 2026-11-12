@@ -163,9 +163,9 @@ export async function POST(request) {
                 });
 
                 const [emailSuccess, waSuccess, smsSuccess] = await Promise.all([
-                    giver.email ? sendEmail(giver.email, subject, message, html) : Promise.resolve(false),
-                    giver.phone ? sendWhatsApp(giver.phone, message) : Promise.resolve(false),
-                    isPremium && giver.phone ? sendSMS(giver.phone, message) : Promise.resolve(false),
+                    giver.email ? sendEmail(giver.email, subject, message, html) : Promise.resolve(null),
+                    isPremium && giver.phone ? sendWhatsApp(giver.phone, message) : Promise.resolve(null),
+                    isPremium && giver.phone ? sendSMS(giver.phone, message) : Promise.resolve(null),
                 ]);
 
                 return {

@@ -59,9 +59,11 @@ export default function ParticipantList({
     }
     columns.push({ key: "actions", label: t('participant_list.col_actions') });
 
-    const getStatusIcon = (success) => (
-        success ? <span className="text-green-500">✅</span> : <span className="text-red-500">❌</span>
-    );
+    const getStatusIcon = (statusValue) => {
+        if (statusValue === true) return <span className="text-green-500 font-bold">✅</span>;
+        if (statusValue === false) return <span className="text-red-500 font-bold">❌</span>;
+        return <span className="text-default-300 font-bold">—</span>;
+    };
 
     const buildShareUrl = (secretToken) => {
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
@@ -125,6 +127,9 @@ export default function ParticipantList({
         const cleanPhone = participant.phone ? participant.phone.replace(/[^0-9]/g, '') : '';
         const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waText}` : `https://wa.me/?text=${waText}`;
 
+        // Enlace directo para compartir en Telegram
+        const tgLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${waText}`;
+
         const copyLink = async () => {
             try {
                 await navigator.clipboard.writeText(shareUrl);
@@ -136,7 +141,7 @@ export default function ParticipantList({
         };
 
         return (
-            <div className="flex gap-2 items-center flex-wrap">
+            <div className="flex gap-1.5 sm:gap-2 items-center flex-wrap">
                 <Button
                     size="sm"
                     color="success"
@@ -145,11 +150,25 @@ export default function ParticipantList({
                     href={waLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="text-xs sm:text-sm font-semibold"
                     onPress={() => track(EVENTS.SHARE_CLICK, { channel: 'whatsapp' })}
                 >
                     {t('participant_list.share_whatsapp')}
                 </Button>
-                <Button size="sm" variant="flat" onPress={copyLink}>
+                <Button
+                    size="sm"
+                    color="primary"
+                    variant="flat"
+                    as="a"
+                    href={tgLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs sm:text-sm font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40"
+                    onPress={() => track(EVENTS.SHARE_CLICK, { channel: 'telegram' })}
+                >
+                    {t('participant_list.share_telegram')}
+                </Button>
+                <Button size="sm" variant="flat" className="text-xs sm:text-sm" onPress={copyLink}>
                     {t('participant_list.copy_link')}
                 </Button>
             </div>
@@ -254,14 +273,14 @@ export default function ParticipantList({
                 if (!status) return <span className="text-default-400">{t('participant_list.pending')}</span>;
                 return (
                     <div className="flex gap-2">
-                        <Tooltip content={`Email: ${status.email ? t('participant_list.sent') : t('participant_list.failed')}`}>
-                            <span>📧 {getStatusIcon(status.email)}</span>
+                        <Tooltip content={`Email: ${status.email === true ? t('participant_list.sent') : status.email === false ? t('participant_list.failed') : t('participant_list.not_provided')}`}>
+                            <span className="cursor-help">📧 {getStatusIcon(status.email)}</span>
                         </Tooltip>
-                        <Tooltip content={`WhatsApp: ${status.whatsapp ? t('participant_list.sent') : t('participant_list.failed')}`}>
-                            <span>📱 {getStatusIcon(status.whatsapp)}</span>
+                        <Tooltip content={`WhatsApp: ${status.whatsapp === true ? t('participant_list.sent') : status.whatsapp === false ? t('participant_list.failed') : t('participant_list.premium_feature')}`}>
+                            <span className="cursor-help">📱 {getStatusIcon(status.whatsapp)}</span>
                         </Tooltip>
-                        <Tooltip content={`SMS: ${status.sms ? t('participant_list.sent') : t('participant_list.failed')}`}>
-                            <span>💬 {getStatusIcon(status.sms)}</span>
+                        <Tooltip content={`SMS: ${status.sms === true ? t('participant_list.sent') : status.sms === false ? t('participant_list.failed') : t('participant_list.premium_feature')}`}>
+                            <span className="cursor-help">💬 {getStatusIcon(status.sms)}</span>
                         </Tooltip>
                     </div>
                 );
@@ -294,7 +313,7 @@ export default function ParticipantList({
 
                 if (isPaused) return null;
 
-                const hasError = status && (!status.email || !status.whatsapp);
+                const hasError = status && (status.email === false || status.whatsapp === false || status.sms === false);
 
                 return (
                     <div className="flex gap-2 items-center flex-wrap">
@@ -394,7 +413,7 @@ export default function ParticipantList({
                     sortedParticipants.map((p, idx) => {
                         const result = getParticipantResult(p);
                         const status = result?.status;
-                        const hasError = status && (!status.email || !status.whatsapp);
+                        const hasError = status && (status.email === false || status.whatsapp === false || status.sms === false);
                         const isPaused = p.active === false;
                         const otherActive = participants.filter((other) => other.id !== p.id && other.active !== false);
 

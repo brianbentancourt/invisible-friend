@@ -45,6 +45,15 @@ export async function POST(request) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
         }
 
+        // Verificar estado Premium para saber qué canales automáticos se permiten reintentar
+        let isPremium = isAdmin;
+        if (!isPremium && session.email) {
+            const userDoc = await adminDb.collection('users').doc(session.email.toLowerCase()).get();
+            if (userDoc.exists && userDoc.data().isPremium) {
+                isPremium = true;
+            }
+        }
+
         const locale = localeFromParam(drawData.locale);
         const dict = getDictionary(locale);
 
@@ -69,16 +78,16 @@ export async function POST(request) {
         const newStatus = { ...currentStatus };
 
         // Sólo reintentamos los canales que fallaron y donde haya contacto
-        if (!currentStatus.email && giver.email) {
+        if (currentStatus.email === false && giver.email) {
             const html = buildEmailHtml({ text: message, url, ctaLabel: dict.reveal.reveal_btn });
             newStatus.email = await sendEmail(giver.email, dict.api.email_subject, message, html);
         }
 
-        if (!currentStatus.whatsapp && giver.phone) {
+        if (isPremium && currentStatus.whatsapp === false && giver.phone) {
             newStatus.whatsapp = await sendWhatsApp(giver.phone, message);
         }
 
-        if (!currentStatus.sms && giver.phone) {
+        if (isPremium && currentStatus.sms === false && giver.phone) {
             newStatus.sms = await sendSMS(giver.phone, message);
         }
 
