@@ -18,8 +18,9 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'brianbentancourt9@gmail.com')
     .filter(Boolean);
 
 function generateLogContent(assignments) {
+    const contactInfo = (p) => p.email || p.phone || (p.telegram ? `@${p.telegram.replace(/^@/, '')}` : 'Sin contacto');
     const logContent = assignments
-        .map(({ giver, receiver }) => `${giver.name} (${giver.email || giver.phone || 'Sin contacto'}) -> ${receiver.name} (${receiver.email || receiver.phone || 'Sin contacto'})`)
+        .map(({ giver, receiver }) => `${giver.name} (${contactInfo(giver)}) -> ${receiver.name} (${contactInfo(receiver)})`)
         .join('\n');
 
     return (

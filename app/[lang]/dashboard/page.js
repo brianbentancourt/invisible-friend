@@ -358,10 +358,10 @@ function Dashboard() {
     };
 
     const handleExportCsv = () => {
-        const header = 'nombre,email,telefono,deseos\n';
+        const header = 'nombre,email,telefono,telegram,deseos\n';
         const rows = participants
             .map((p) =>
-                [p.name, p.email || '', p.phone || '', (p.wishlist || '').replace(/\n/g, ' ')]
+                [p.name, p.email || '', p.phone || '', p.telegram || '', (p.wishlist || '').replace(/\n/g, ' ')]
                     .map((value) => `"${String(value).replace(/"/g, '""')}"`)
                     .join(',')
             )

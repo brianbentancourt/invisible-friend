@@ -9,6 +9,7 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [telegram, setTelegram] = useState('');
     const [wishlist, setWishlist] = useState('');
     const nameInputRef = useRef(null);
     const { t } = useLanguage();
@@ -18,12 +19,13 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
         const trimmedName = name.trim();
         const trimmedEmail = email.trim();
         const trimmedPhone = phone.trim();
+        const trimmedTelegram = telegram.trim().replace(/^@/, '');
 
         if (!trimmedName) {
             toast.error(t('participant_form.error_no_name'));
             return;
         }
-        if (!trimmedEmail && !trimmedPhone) {
+        if (!trimmedEmail && !trimmedPhone && !trimmedTelegram) {
             toast.error(t('participant_form.error_no_contact'));
             return;
         }
@@ -31,13 +33,18 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
             name: trimmedName,
             email: trimmedEmail,
             phone: trimmedPhone,
+            telegram: trimmedTelegram,
             wishlist: wishlist.trim(),
         });
         setName('');
         setEmail('');
         setPhone('');
+        setTelegram('');
         setWishlist('');
-        track(EVENTS.PARTICIPANT_ADDED, { has_wishlist: Boolean(wishlist.trim()) });
+        track(EVENTS.PARTICIPANT_ADDED, {
+            has_wishlist: Boolean(wishlist.trim()),
+            has_telegram: Boolean(trimmedTelegram),
+        });
         toast.success(t('participant_form.success'));
 
         // Mantener el foco en el campo de nombre para cargar el siguiente rápidamente
@@ -72,6 +79,15 @@ export default function ParticipantForm({ onAddParticipant, isDisabled }) {
                 onChange={(e) => setPhone(e.target.value)}
                 isDisabled={isDisabled}
                 autoComplete="tel"
+            />
+            <Input
+                label={t('participant_form.telegram')}
+                placeholder={t('participant_form.telegram_ph')}
+                startContent={<span className="text-default-400 text-sm">@</span>}
+                value={telegram}
+                onChange={(e) => setTelegram(e.target.value)}
+                isDisabled={isDisabled}
+                autoComplete="off"
             />
             {/* La lista de deseos viaja con el enlace secreto: es lo que hace que
                 el regalo se acierte y lo que alimenta las ideas de regalo. */}

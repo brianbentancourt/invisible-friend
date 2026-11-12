@@ -215,12 +215,14 @@
     "name": "Name",
     "email": "Email (recommended so we can notify them)",
     "phone": "Phone (With country code, e.g., +1)",
+    "telegram": "Telegram (optional)",
+    "telegram_ph": "e.g. john_doe",
     "wishlist": "Wishlist (optional)",
     "wishlist_ph": "e.g. a cookbook, something for the bike, plants",
     "add": "Add",
     "error_incomplete": "Please fill all fields",
     "error_no_name": "Name is required",
-    "error_no_contact": "You must provide at least an Email or Phone",
+    "error_no_contact": "You must provide at least one contact method (Email, Phone or Telegram)",
     "success": "Participant added successfully"
   },
   "participant_list": {
@@ -228,6 +230,7 @@
     "col_name": "NAME",
     "col_phone": "PHONE",
     "col_email": "EMAIL",
+    "col_telegram": "TELEGRAM",
     "col_wishlist": "WISHES",
     "col_exclusions": "DO NOT GIFT TO",
     "col_notifications": "NOTIFICATIONS",

@@ -215,12 +215,14 @@
     "name": "Nome",
     "email": "E-mail (recomendado para avisar do sorteio)",
     "phone": "Telefone (com código do país, ex: +55)",
+    "telegram": "Telegram (opcional)",
+    "telegram_ph": "ex: joaosilva",
     "wishlist": "Lista de desejos (opcional)",
     "wishlist_ph": "Ex: um livro de receitas, algo para a bike, plantas",
     "add": "Adicionar",
     "error_incomplete": "Preencha todos os campos",
     "error_no_name": "O nome é obrigatório",
-    "error_no_contact": "Informe pelo menos um e-mail ou telefone",
+    "error_no_contact": "Informe pelo menos um meio de contato (E-mail, Telefone ou Telegram)",
     "success": "Participante adicionado com sucesso"
   },
   "participant_list": {
@@ -228,6 +230,7 @@
     "col_name": "NOME",
     "col_phone": "TELEFONE",
     "col_email": "E-MAIL",
+    "col_telegram": "TELEGRAM",
     "col_wishlist": "DESEJOS",
     "col_exclusions": "NÃO PODE TIRAR",
     "col_notifications": "NOTIFICAÇÕES",

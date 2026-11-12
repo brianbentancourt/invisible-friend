@@ -39,7 +39,7 @@ export default function ParticipantList({
 }) {
     const { t, locale } = useLanguage();
     const [editingParticipant, setEditingParticipant] = useState(null);
-    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', wishlist: '' });
+    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', telegram: '', wishlist: '' });
 
     const allActive = participants.length > 0 && participants.every((p) => p.active !== false);
     const someActive = participants.some((p) => p.active !== false);
@@ -50,6 +50,7 @@ export default function ParticipantList({
         { key: "name", label: t('participant_list.col_name') },
         { key: "phone", label: t('participant_list.col_phone') },
         { key: "email", label: t('participant_list.col_email') },
+        { key: "telegram", label: t('participant_list.col_telegram') },
         { key: "wishlist", label: t('participant_list.col_wishlist') },
         { key: "exclusions", label: t('participant_list.col_exclusions') },
     ];
@@ -78,6 +79,7 @@ export default function ParticipantList({
             name: participant.name || '',
             email: participant.email || '',
             phone: participant.phone || '',
+            telegram: participant.telegram || '',
             wishlist: participant.wishlist || '',
         });
     };
@@ -87,12 +89,13 @@ export default function ParticipantList({
         const trimmedName = editForm.name.trim();
         const trimmedEmail = editForm.email.trim();
         const trimmedPhone = editForm.phone.trim();
+        const trimmedTelegram = (editForm.telegram || '').trim().replace(/^@/, '');
 
         if (!trimmedName) {
             toast.error(t('participant_form.error_no_name'));
             return;
         }
-        if (!trimmedEmail && !trimmedPhone) {
+        if (!trimmedEmail && !trimmedPhone && !trimmedTelegram) {
             toast.error(t('participant_form.error_no_contact'));
             return;
         }
@@ -101,6 +104,7 @@ export default function ParticipantList({
             name: trimmedName,
             email: trimmedEmail,
             phone: trimmedPhone,
+            telegram: trimmedTelegram,
             wishlist: editForm.wishlist.trim(),
         });
 
@@ -226,6 +230,19 @@ export default function ParticipantList({
             case "email":
                 return participant.email ? (
                     <span className={isPaused ? 'text-default-400' : ''}>{participant.email}</span>
+                ) : (
+                    <span className="text-default-300">—</span>
+                );
+            case "telegram":
+                return participant.telegram ? (
+                    <a
+                        href={`https://t.me/${participant.telegram.replace(/^@/, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`text-sky-600 dark:text-sky-400 hover:underline font-mono text-xs ${isPaused ? 'opacity-50' : ''}`}
+                    >
+                        @{participant.telegram.replace(/^@/, '')}
+                    </a>
                 ) : (
                     <span className="text-default-300">—</span>
                 );
@@ -367,6 +384,13 @@ export default function ParticipantList({
                                     value={editForm.phone}
                                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                                 />
+                                <Input
+                                    label={t('participant_form.telegram')}
+                                    placeholder={t('participant_form.telegram_ph')}
+                                    startContent={<span className="text-default-400 text-sm">@</span>}
+                                    value={editForm.telegram}
+                                    onChange={(e) => setEditForm({ ...editForm, telegram: e.target.value })}
+                                />
                                 <Textarea
                                     label={t('participant_form.wishlist')}
                                     placeholder={t('participant_form.wishlist_ph')}
@@ -456,6 +480,16 @@ export default function ParticipantList({
                                                 <div className="flex flex-wrap gap-2 text-xs text-default-500 mt-1 min-w-0">
                                                     {p.phone && <span className="break-all">📱 {p.phone}</span>}
                                                     {p.email && <span className="break-all">📧 {p.email}</span>}
+                                                    {p.telegram && (
+                                                        <a
+                                                            href={`https://t.me/${p.telegram.replace(/^@/, '')}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="break-all text-sky-600 dark:text-sky-400 hover:underline"
+                                                        >
+                                                            ✈️ @{p.telegram.replace(/^@/, '')}
+                                                        </a>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
