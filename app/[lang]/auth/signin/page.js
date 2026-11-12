@@ -64,8 +64,8 @@ function SignIn() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center px-4">
-            <Card className="max-w-md w-full border border-default-100 bg-default-50/50">
-                <CardBody className="p-8 space-y-6">
+            <Card className="max-w-md w-full border border-default-100 bg-default-50/50 shadow-md">
+                <CardBody className="p-6 sm:p-8 space-y-6">
                     <div className="text-center">
                         <div className="text-4xl mb-3">🎁</div>
                         <h1 className="text-2xl font-extrabold">{t('nav.login')}</h1>

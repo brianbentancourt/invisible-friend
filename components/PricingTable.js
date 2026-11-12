@@ -131,7 +131,7 @@ export default function PricingTable() {
                                 : 'border-default-200 bg-default-50/50'
                         }`}
                     >
-                        <CardBody className="p-6 sm:p-7 lg:p-8 flex flex-col gap-6 overflow-hidden overflow-x-hidden">
+                        <CardBody className="p-5 sm:p-7 lg:p-8 flex flex-col gap-6 overflow-hidden overflow-x-hidden">
                             <div>
                                 <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                                     <h3 className="text-xl font-bold min-w-0">{tier.name}</h3>

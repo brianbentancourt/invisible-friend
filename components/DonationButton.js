@@ -10,8 +10,8 @@ export default function DonationButton() {
       <DropdownTrigger>
         <Button
           variant="shadow"
-          className="font-bold bg-[#FFDD00] text-black shadow-[0_4px_14px_0_rgba(255,221,0,0.39)]"
-          startContent={<span className="text-xl">☕</span>}
+          className="font-bold bg-[#FFDD00] text-black shadow-[0_4px_14px_0_rgba(255,221,0,0.39)] text-xs sm:text-sm px-3 sm:px-4 h-9 sm:h-10"
+          startContent={<span className="text-base sm:text-xl">☕</span>}
         >
           Buy me a coffee
         </Button>

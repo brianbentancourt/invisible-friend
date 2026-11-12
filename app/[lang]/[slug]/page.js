@@ -131,7 +131,7 @@ export default async function ContentPage({ params }) {
                 <JsonLd key={index} data={schema} />
             ))}
 
-            <main className={`container mx-auto px-6 ${page.showPricing ? 'max-w-5xl' : 'max-w-3xl'} pt-16 pb-24`}>
+            <main className={`container mx-auto px-4 sm:px-6 ${page.showPricing ? 'max-w-5xl' : 'max-w-3xl'} pt-12 sm:pt-16 pb-20 sm:pb-24`}>
                 <nav className="text-sm text-default-400 mb-6">
                     <Link href={`/${locale}`} className="hover:text-primary transition-colors">
                         {SITE_NAME}
@@ -140,7 +140,7 @@ export default async function ContentPage({ params }) {
                     <span className="text-default-500">{page.h1}</span>
                 </nav>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 sm:mb-6 break-words">
                     {page.h1}
                 </h1>
 

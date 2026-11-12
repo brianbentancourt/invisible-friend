@@ -377,7 +377,7 @@ function Dashboard() {
         : t('dashboard.free_plan');
 
     return (
-        <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
+        <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-8 min-h-screen flex flex-col max-w-7xl">
             {/* Modal de confirmación anti-spoilers al descargar log */}
             <Modal
                 isOpen={isSpoilerModalOpen}
@@ -485,7 +485,7 @@ function Dashboard() {
                         )}
                     </div>
                 </div>
-                <div className="flex gap-3 items-center flex-wrap">
+                <div className="flex gap-2 sm:gap-3 items-center flex-wrap">
                     {!isPremium && (
                         <>
                             <PaymentMethodSelector
@@ -496,7 +496,7 @@ function Dashboard() {
                             <Button
                                 color="secondary"
                                 variant="flat"
-                                className="font-bold"
+                                className="font-bold text-xs sm:text-sm"
                                 isLoading={isCheckoutLoading}
                                 onPress={() => handleUpgrade('premium')}
                             >
@@ -511,7 +511,7 @@ function Dashboard() {
             {/* Banner de reanudación automática tras iniciar sesión */}
             {showResumeBanner && (
                 <Card className="mb-6 border border-success/40 bg-success/10">
-                    <CardBody className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                    <CardBody className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                         <div>
                             <h2 className="font-bold text-success-600 mb-1">
                                 {t('dashboard.resume_draw_title')}
@@ -523,7 +523,7 @@ function Dashboard() {
                         <Button
                             color="success"
                             variant="shadow"
-                            className="shrink-0 font-bold text-white"
+                            className="shrink-0 font-bold text-white w-full sm:w-auto"
                             isLoading={isLoading}
                             onPress={handleDraw}
                         >
@@ -536,7 +536,7 @@ function Dashboard() {
             {/* Modo invitado: se puede cargar todo sin cuenta y el login se pide al sortear */}
             {isGuest && (
                 <Card className="mb-6 border border-primary/30 bg-primary/5">
-                    <CardBody className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                    <CardBody className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                         <div>
                             <h2 className="font-bold mb-1">{t('dashboard.guest_title')}</h2>
                             <p className="text-sm text-default-500">{t('dashboard.guest_desc')}</p>
@@ -546,7 +546,7 @@ function Dashboard() {
                             href={`/${locale}/auth/signin?next=dashboard`}
                             color="primary"
                             variant="flat"
-                            className="shrink-0 font-semibold"
+                            className="shrink-0 font-semibold w-full sm:w-auto"
                             onPress={() => track(EVENTS.SIGNUP_START, { source: 'guest_banner' })}
                         >
                             {t('dashboard.guest_login')}
@@ -557,14 +557,14 @@ function Dashboard() {
 
             {limitReached && (
                 <Card className="mb-6 border border-warning/40 bg-warning/5">
-                    <CardBody className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                    <CardBody className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                         <p className="text-sm">
                             {t('dashboard.limit_reached', { limit: FREE_PARTICIPANT_LIMIT })}
                         </p>
                         <Button
                             color="warning"
                             variant="flat"
-                            className="shrink-0 font-semibold"
+                            className="shrink-0 font-semibold w-full sm:w-auto"
                             isLoading={isCheckoutLoading}
                             onPress={() => handleUpgrade('premium')}
                         >
@@ -576,15 +576,15 @@ function Dashboard() {
 
             {!isPremium && <AdBanner />}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mt-4">
                 {/* Panel Izquierdo: Formulario y detalles del evento */}
                 <div className="lg:col-span-1 flex flex-col gap-6">
-                    <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100">
+                    <div className="bg-default-50 rounded-2xl p-4 sm:p-6 shadow-sm border border-default-100">
                         <h2 className="text-xl font-bold mb-4">{t('dashboard.add_participant')}</h2>
                         <ParticipantForm onAddParticipant={handleAddParticipant} isDisabled={limitReached} />
                     </div>
 
-                    <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100">
+                    <div className="bg-default-50 rounded-2xl p-4 sm:p-6 shadow-sm border border-default-100">
                         <h2 className="text-xl font-bold mb-4">{t('dashboard.event_title')}</h2>
                         <div className="flex flex-col gap-4">
                             <Input
@@ -631,10 +631,10 @@ function Dashboard() {
 
                 {/* Panel Derecho: Lista */}
                 <div className="lg:col-span-2">
-                    <div className="bg-default-50 rounded-2xl p-6 shadow-sm border border-default-100 min-h-[400px] flex flex-col">
-                        <div className="flex justify-between items-center mb-4">
+                    <div className="bg-default-50 rounded-2xl p-4 sm:p-6 shadow-sm border border-default-100 min-h-[400px] flex flex-col">
+                        <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-2 mb-4">
                             <h2 className="text-xl font-bold">{t('dashboard.participants')}</h2>
-                            <span className="text-sm text-default-500 bg-default-100 px-3 py-1 rounded-full">
+                            <span className="text-xs sm:text-sm text-default-500 bg-default-100 px-2.5 sm:px-3 py-1 rounded-full">
                                 {activeParticipants.length} / {participants.length} {t('dashboard.people')}
                                 {!isPremium && ` (Máx ${FREE_PARTICIPANT_LIMIT})`}
                             </span>

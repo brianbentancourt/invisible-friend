@@ -21,12 +21,12 @@ export default function PaymentMethodSelector({ value, onChange, compact = false
     if (!PAYPAL_ENABLED) return null;
 
     return (
-        <div className={`flex ${compact ? 'items-center gap-2' : 'flex-col items-center gap-3'} ${className}`}>
-            <span className="text-xs text-default-500">{t('pricing.pay_with')}</span>
+        <div className={`flex ${compact ? 'items-center gap-2 flex-wrap' : 'flex-col items-center gap-3'} max-w-full ${className}`}>
+            <span className="text-xs text-default-500 shrink-0">{t('pricing.pay_with')}</span>
             <div
                 role="radiogroup"
                 aria-label={t('pricing.pay_with')}
-                className="inline-flex gap-1 p-1 rounded-full bg-default-100 border border-default-200"
+                className="inline-flex max-w-full gap-1 p-1 rounded-full bg-default-100 border border-default-200"
             >
                 {OPTIONS.map((option) => {
                     const isSelected = value === option.id;

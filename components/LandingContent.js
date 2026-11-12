@@ -52,18 +52,18 @@ export default function LandingContent() {
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/20 blur-[120px] pointer-events-none" />
 
-            <main className="container mx-auto px-6 relative z-10 pt-16 pb-24">
+            <main className="container mx-auto px-4 sm:px-6 relative z-10 pt-12 sm:pt-16 pb-20 sm:pb-24 max-w-7xl">
                 {/* Hero */}
-                <section className="flex flex-col items-center justify-center text-center space-y-8 min-h-[56vh]">
+                <section className="flex flex-col items-center justify-center text-center space-y-6 sm:space-y-8 min-h-[56vh]">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: 'easeOut' }}
                     >
-                        <span className="px-4 py-1.5 rounded-full bg-default-100 border border-default-200 text-sm font-medium tracking-wide text-default-600 mb-6 inline-block">
+                        <span className="px-3 sm:px-4 py-1.5 rounded-full bg-default-100 border border-default-200 text-xs sm:text-sm font-medium tracking-wide text-default-600 mb-4 sm:mb-6 inline-block">
                             {t('landing.tagline')}
                         </span>
-                        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+                        <h1 className="text-3xl xs:text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-4 sm:mb-6 break-words">
                             {t('landing.title1')}{' '}
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                                 {t('landing.title2')}
@@ -71,7 +71,7 @@ export default function LandingContent() {
                             <br />
                             {t('landing.title3')}
                         </h1>
-                        <p className="text-lg md:text-xl text-default-500 max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-base sm:text-lg md:text-xl text-default-500 max-w-2xl mx-auto leading-relaxed">
                             {t('landing.description')}
                         </p>
                     </motion.div>
@@ -80,14 +80,14 @@ export default function LandingContent() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5, delay: 0.25 }}
-                        className="flex flex-col items-center gap-4"
+                        className="flex flex-col items-center gap-4 w-full sm:w-auto"
                     >
-                        <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto max-w-md sm:max-w-none">
                             <Button
                                 size="lg"
                                 color="primary"
                                 variant="shadow"
-                                className="px-10 py-6 text-lg font-semibold"
+                                className="w-full sm:w-auto px-6 sm:px-10 py-5 sm:py-6 text-base sm:text-lg font-semibold"
                                 isLoading={loading}
                                 onPress={() => goToDashboard('hero')}
                             >
@@ -99,19 +99,19 @@ export default function LandingContent() {
                                     href={`/${locale}/${links.generator.slug}`}
                                     size="lg"
                                     variant="flat"
-                                    className="px-8 py-6 text-lg"
+                                    className="w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
                                 >
                                     {t('landing.cta_secondary')}
                                 </Button>
                             )}
                         </div>
-                        <p className="text-sm text-default-400">{t('landing.no_signup')}</p>
+                        <p className="text-xs sm:text-sm text-default-400">{t('landing.no_signup')}</p>
                     </motion.div>
                 </section>
 
                 {/* Prueba social */}
-                <motion.section {...fadeUp} className="mt-24">
-                    <div className="rounded-3xl border border-default-100 bg-default-50/50 backdrop-blur-md p-8 md:p-10">
+                <motion.section {...fadeUp} className="mt-20 sm:mt-24">
+                    <div className="rounded-3xl border border-default-100 bg-default-50/50 backdrop-blur-md p-6 sm:p-8 md:p-10">
                         <p className="text-center text-sm uppercase tracking-widest text-default-400 mb-8">
                             {t('landing.social_proof')}
                         </p>
@@ -249,15 +249,15 @@ export default function LandingContent() {
                 {/* CTA final */}
                 <motion.section
                     {...fadeUp}
-                    className="mt-28 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10 p-10 md:p-16 text-center"
+                    className="mt-20 sm:mt-28 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10 p-6 sm:p-10 md:p-16 text-center"
                 >
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.final_cta_title')}</h2>
-                    <p className="text-default-500 max-w-xl mx-auto mb-8">{t('landing.final_cta_desc')}</p>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t('landing.final_cta_title')}</h2>
+                    <p className="text-default-500 max-w-xl mx-auto mb-6 sm:mb-8 text-sm sm:text-base">{t('landing.final_cta_desc')}</p>
                     <Button
                         size="lg"
                         color="primary"
                         variant="shadow"
-                        className="px-10 py-6 text-lg font-semibold"
+                        className="w-full sm:w-auto px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg font-semibold"
                         onPress={() => goToDashboard('final_cta')}
                     >
                         {t('landing.final_cta_btn')}

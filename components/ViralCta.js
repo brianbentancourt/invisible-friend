@@ -19,12 +19,12 @@ export default function ViralCta() {
     };
 
     return (
-        <section className="mt-16 mb-10 w-full max-w-2xl mx-auto rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10 p-8 text-center">
-            <h2 className="text-2xl font-bold mb-3">{t('reveal.viral_title')}</h2>
+        <section className="mt-12 sm:mt-16 mb-8 sm:mb-10 w-full max-w-2xl mx-auto rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10 p-6 sm:p-8 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 break-words">{t('reveal.viral_title')}</h2>
             <p className="text-default-500 mb-6 text-sm max-w-md mx-auto">
                 {t('reveal.viral_desc')}
             </p>
-            <Button color="primary" variant="shadow" className="font-semibold px-8" onPress={handleClick}>
+            <Button color="primary" variant="shadow" className="font-semibold px-6 sm:px-8 w-full sm:w-auto" onPress={handleClick}>
                 {t('reveal.viral_cta')}
             </Button>
         </section>

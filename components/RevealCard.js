@@ -31,10 +31,10 @@ export default function RevealCard({ giverName, receiverName, wishlist, event, c
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 break-words">
           {t('reveal.hello')} <span className="text-primary">{giverName}</span>!
         </h1>
-        <p className="text-lg text-default-500 mb-10 max-w-lg mx-auto">
+        <p className="text-base sm:text-lg text-default-500 mb-8 sm:mb-10 max-w-lg mx-auto">
           {t('reveal.subtitle')}
         </p>
       </motion.div>
@@ -48,12 +48,12 @@ export default function RevealCard({ giverName, receiverName, wishlist, event, c
               animate={{ opacity: 1, rotateY: 0 }}
               exit={{ opacity: 0, rotateY: 90 }}
               transition={{ duration: 0.4 }}
-              className="absolute inset-0 flex items-center justify-center bg-default-100 rounded-2xl shadow-lg border border-default-200"
+              className="absolute inset-0 flex items-center justify-center bg-default-100 rounded-2xl shadow-lg border border-default-200 p-4"
             >
               <Button
                 color="primary"
                 size="lg"
-                className="text-xl px-12 py-8 rounded-full font-bold shadow-xl hover:scale-105 transform transition-all"
+                className="text-lg sm:text-xl px-8 sm:px-12 py-6 sm:py-8 rounded-full font-bold shadow-xl hover:scale-105 transform transition-all"
                 onPress={handleReveal}
               >
                 {t('reveal.reveal_btn')}
@@ -65,16 +65,16 @@ export default function RevealCard({ giverName, receiverName, wishlist, event, c
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', bounce: 0.5, duration: 0.8 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl shadow-2xl border border-primary/30 p-6"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl shadow-2xl border border-primary/30 p-4 sm:p-6"
             >
-              <span className="text-sm font-semibold uppercase tracking-widest text-default-500 mb-2">
+              <span className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-default-500 mb-1 sm:mb-2">
                 {t('reveal.gift_to')}
               </span>
-              <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary break-words">
                 {receiverName}
               </h2>
-              <div className="absolute -top-4 -right-4 text-4xl animate-bounce">🎉</div>
-              <div className="absolute -bottom-4 -left-4 text-4xl animate-bounce delay-100">✨</div>
+              <div className="absolute top-2 right-2 sm:-top-4 sm:-right-4 text-3xl sm:text-4xl animate-bounce pointer-events-none select-none">🎉</div>
+              <div className="absolute bottom-2 left-2 sm:-bottom-4 sm:-left-4 text-3xl sm:text-4xl animate-bounce delay-100 pointer-events-none select-none">✨</div>
             </motion.div>
           )}
         </AnimatePresence>

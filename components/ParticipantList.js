@@ -407,11 +407,11 @@ export default function ParticipantList({
                                         : 'border-default-200 bg-background/60 shadow-sm'
                                 }`}
                             >
-                                <CardBody className="p-4 flex flex-col gap-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="flex items-start gap-3">
+                                <CardBody className="p-4 flex flex-col gap-3 min-w-0">
+                                    <div className="flex items-start justify-between gap-2 min-w-0">
+                                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
                                             {!drawResults ? (
-                                                <div className="pt-0.5">
+                                                <div className="pt-0.5 shrink-0">
                                                     <Checkbox
                                                         isSelected={!isPaused}
                                                         onValueChange={(val) => onUpdateParticipant(p.id, { active: val })}
@@ -421,11 +421,11 @@ export default function ParticipantList({
                                                     />
                                                 </div>
                                             ) : (
-                                                <span className="text-xs pt-0.5">{isPaused ? '⏸️' : '✅'}</span>
+                                                <span className="text-xs pt-0.5 shrink-0">{isPaused ? '⏸️' : '✅'}</span>
                                             )}
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className={`font-bold text-base ${isPaused ? 'line-through text-default-400' : 'text-foreground'}`}>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                    <h3 className={`font-bold text-base truncate max-w-full ${isPaused ? 'line-through text-default-400' : 'text-foreground'}`} title={p.name}>
                                                         {p.name}
                                                     </h3>
                                                     {isPaused && (
@@ -434,9 +434,9 @@ export default function ParticipantList({
                                                         </Chip>
                                                     )}
                                                 </div>
-                                                <div className="flex flex-wrap gap-2 text-xs text-default-500 mt-1">
-                                                    {p.phone && <span>📱 {p.phone}</span>}
-                                                    {p.email && <span>📧 {p.email}</span>}
+                                                <div className="flex flex-wrap gap-2 text-xs text-default-500 mt-1 min-w-0">
+                                                    {p.phone && <span className="break-all">📱 {p.phone}</span>}
+                                                    {p.email && <span className="break-all">📧 {p.email}</span>}
                                                 </div>
                                             </div>
                                         </div>
@@ -467,7 +467,7 @@ export default function ParticipantList({
                                     </div>
 
                                     {p.wishlist && (
-                                        <div className="text-xs bg-default-100 rounded-lg p-2.5 text-default-600">
+                                        <div className="text-xs bg-default-100 rounded-lg p-2.5 text-default-600 break-words">
                                             <span className="font-semibold text-default-700">🎁 {t('participant_list.col_wishlist')}: </span>
                                             {p.wishlist}
                                         </div>
