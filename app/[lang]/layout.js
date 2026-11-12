@@ -47,6 +47,14 @@ export async function generateMetadata({ params }) {
     applicationName: SITE_NAME,
     authors: [{ name: 'Brian Bentancourt', url: 'https://brianbentancourt.com' }],
     creator: 'Brian Bentancourt',
+    icons: {
+      icon: [
+        { url: '/icon.svg', type: 'image/svg+xml' },
+      ],
+      apple: [
+        { url: '/icon.svg', type: 'image/svg+xml' },
+      ],
+    },
     // La imagen de compartido la genera app/[lang]/opengraph-image.js:
     // antes se apuntaba a un /og-image.png inexistente y salía un 404.
     openGraph: {
