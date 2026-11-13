@@ -37,7 +37,7 @@ export default function AdBanner() {
     );
   }
 
-  // Banner de Afiliados (Amazon / Mercado Libre)
+  // Detectar stores (en español por defecto prioriza Mercado Libre Uruguay)
   const stores = getStores(locale);
   const primaryStore = stores[0];
 
@@ -45,25 +45,33 @@ export default function AdBanner() {
     return null;
   }
 
-  const deals = {
-    es: [
-      { label: '💸 Menos de 15€', query: 'regalos baratos originales menos de 15 euros' },
-      { label: '🎧 Tecnología & Gadgets', query: 'gadgets tecnologia originales regalo' },
-      { label: '🎲 Juegos de mesa', query: 'juegos de mesa divertidos para regalo' },
-    ],
-    en: [
-      { label: '💸 Under $15', query: 'gifts under 15 dollars' },
-      { label: '🎧 Tech & Gadgets', query: 'tech gifts cool gadgets' },
-      { label: '🎲 Board Games', query: 'fun board games party games' },
-    ],
-    pt: [
-      { label: '💸 Menos de R$50', query: 'presentes baratos criativos' },
-      { label: '🎧 Tecnologia', query: 'gadgets tecnologia presente' },
-      { label: '🎲 Jogos de Tabuleiro', query: 'jogos de tabuleiro divertidos presente' },
-    ],
-  };
+  const isMeli = primaryStore.id.startsWith('meli');
 
-  const currentDeals = deals[locale] || deals.es;
+  const deals = isMeli
+    ? [
+        { label: '💸 Hasta $500', query: 'regalos hasta 500 pesos' },
+        { label: '🎁 Hasta $1000', query: 'regalos hasta 1000 pesos' },
+        { label: '🎧 Tecnología & Auriculares', query: 'tecnologia gadgets regalo' },
+        { label: '🎲 Juegos de mesa', query: 'juegos de mesa' },
+        { label: '🧉 Mates & Termos', query: 'mates termos originales' },
+      ]
+    : locale === 'en'
+      ? [
+          { label: '💸 Under $15', query: 'gifts under 15 dollars' },
+          { label: '🎧 Tech & Gadgets', query: 'tech gifts cool gadgets' },
+          { label: '🎲 Board Games', query: 'fun board games party games' },
+        ]
+      : locale === 'pt'
+        ? [
+            { label: '💸 Menos de R$50', query: 'presentes baratos criativos' },
+            { label: '🎧 Tecnologia', query: 'gadgets tecnologia presente' },
+            { label: '🎲 Jogos de Tabuleiro', query: 'jogos de tabuleiro divertidos' },
+          ]
+        : [
+            { label: '💸 Menos de 15€', query: 'regalos baratos originales menos de 15 euros' },
+            { label: '🎧 Tecnología & Gadgets', query: 'gadgets tecnologia originales regalo' },
+            { label: '🎲 Juegos de mesa', query: 'juegos de mesa divertidos para regalo' },
+          ];
 
   return (
     <aside
@@ -84,14 +92,16 @@ export default function AdBanner() {
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-default-500 mb-3 max-w-xl">
-              {locale === 'pt'
-                ? 'Descubra os presentes mais populares, itens criativos e ofertas com envio rápido.'
-                : locale === 'en'
-                  ? 'Explore trending gift ideas, popular picks and top rated deals with fast delivery.'
-                  : 'Descubre los regalos más populares, detalles originales y ofertas con entrega rápida.'}
+              {isMeli
+                ? 'Encontrá opciones populares, detalles originales y regalos con entrega rápida en Mercado Libre.'
+                : locale === 'pt'
+                  ? 'Descubra os presentes mais populares, itens criativos e ofertas com envio rápido.'
+                  : locale === 'en'
+                    ? 'Explore trending gift ideas, popular picks and top rated deals with fast delivery.'
+                    : 'Descubre los regalos más populares, detalles originales y ofertas con entrega rápida.'}
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-2">
-              {currentDeals.map((deal) => (
+              {deals.map((deal) => (
                 <a
                   key={deal.label}
                   href={buildSearchUrl(primaryStore, deal.query)}
@@ -113,7 +123,16 @@ export default function AdBanner() {
           <div className="flex flex-col items-center gap-1.5 shrink-0">
             <Button
               as="a"
-              href={buildSearchUrl(primaryStore, locale === 'pt' ? 'presentes amigo secreto' : locale === 'en' ? 'secret santa gifts' : 'ideas regalos amigo invisible')}
+              href={buildSearchUrl(
+                primaryStore,
+                isMeli
+                  ? 'regalos amigo invisible'
+                  : locale === 'pt'
+                    ? 'presentes amigo secreto'
+                    : locale === 'en'
+                      ? 'secret santa gifts'
+                      : 'ideas regalos amigo invisible'
+              )}
               target="_blank"
               rel="noopener noreferrer sponsored"
               color="primary"
@@ -121,14 +140,10 @@ export default function AdBanner() {
               size="md"
               className="font-semibold text-sm px-5"
             >
-              {locale === 'pt'
-                ? `Explorar no ${primaryStore.name}`
-                : locale === 'en'
-                  ? `Browse on ${primaryStore.name}`
-                  : `Explorar en ${primaryStore.name}`}
+              {`Ver en ${primaryStore.name}`}
             </Button>
             <span className="text-[10px] text-default-400">
-              {locale === 'en' ? 'Sponsored affiliate link' : 'Enlace de afiliado'}
+              {isMeli ? 'Búsqueda directa' : locale === 'en' ? 'Sponsored link' : 'Enlace patrocinado'}
             </span>
           </div>
         </CardBody>
